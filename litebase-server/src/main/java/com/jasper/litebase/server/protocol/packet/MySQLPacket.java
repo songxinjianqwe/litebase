@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.jasper.litebase.server.protocol.domain;
-
-
-import java.nio.ByteBuffer;
-
+package com.jasper.litebase.server.protocol.packet;
 /**
  * @author xianmao.hexm
  */

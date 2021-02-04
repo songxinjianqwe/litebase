@@ -1,6 +1,6 @@
 package com.jasper.litebase.server.handler;
 
-import com.jasper.litebase.server.protocol.domain.MySQLPacket;
+import com.jasper.litebase.server.protocol.packet.MySQLPacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
