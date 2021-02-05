@@ -15,9 +15,11 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.net.FrontendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.MySQLMessage;
+
+import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
 
 import java.nio.ByteBuffer;
 
@@ -49,7 +51,7 @@ public class ErrorPacket extends MySQLPacket {
     public byte[] sqlState = DEFAULT_SQLSTATE;
     public byte[] message;
 
-    public void read(com.alibaba.cobar.net.mysql.BinaryPacket bin) {
+    public void read(BinaryPacket bin) {
         packetLength = bin.packetLength;
         packetId = bin.packetId;
         MySQLMessage mm = new MySQLMessage(bin.data);
@@ -76,33 +78,16 @@ public class ErrorPacket extends MySQLPacket {
     }
 
     @Override
-    public ByteBuffer write(ByteBuffer buffer, FrontendConnection c) {
-        int size = calcPacketSize();
-        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize() + size);
-        BufferUtil.writeUB3(buffer, size);
-        buffer.put(packetId);
-        buffer.put(fieldCount);
-        BufferUtil.writeUB2(buffer, errno);
-        buffer.put(mark);
-        buffer.put(sqlState);
-        if (message != null) {
-            buffer = c.writeToBuffer(message, buffer);
-        }
-        return buffer;
-    }
-
-    public void write(FrontendConnection c) {
-        ByteBuffer buffer = c.allocate();
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(fieldCount);
+        buffer.writeByte(packetId);
+        buffer.writeByte(fieldCount);
         BufferUtil.writeUB2(buffer, errno);
-        buffer.put(mark);
-        buffer.put(sqlState);
+        buffer.writeByte(mark);
+        buffer.writeBytes(sqlState);
         if (message != null) {
-            buffer = c.writeToBuffer(message, buffer);
+            buffer.writeBytes(message);
         }
-        c.write(buffer);
     }
 
     @Override

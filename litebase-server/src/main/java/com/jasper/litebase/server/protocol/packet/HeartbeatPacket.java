@@ -17,6 +17,7 @@ package com.jasper.litebase.server.protocol.packet;
 
 import com.jasper.litebase.server.protocol.codec.MySQLMessage;
 import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
 
 import java.nio.ByteBuffer;
 
@@ -45,13 +46,11 @@ public class HeartbeatPacket extends MySQLPacket {
     }
 
     @Override
-    public void write(BackendConnection c) {
-        ByteBuffer buffer = c.allocate();
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(command);
+        buffer.writeByte(packetId);
+        buffer.writeByte(command);
         BufferUtil.writeLength(buffer, id);
-        c.write(buffer);
     }
 
     @Override

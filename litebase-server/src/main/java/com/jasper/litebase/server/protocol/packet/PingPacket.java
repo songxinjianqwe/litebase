@@ -15,11 +15,18 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * @author xianmao.hexm 2012-4-28
  */
 public class PingPacket extends MySQLPacket {
     public static final byte[] PING = new byte[] { 1, 0, 0, 0, 14 };
+
+    @Override
+    void appendToBuffer(ByteBuf buffer) {
+        buffer.writeBytes(PING);
+    }
 
     @Override
     public int calcPacketSize() {

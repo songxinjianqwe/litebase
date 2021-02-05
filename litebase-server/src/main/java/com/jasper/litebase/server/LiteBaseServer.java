@@ -1,6 +1,9 @@
 package com.jasper.litebase.server;
 
 import com.jasper.litebase.config.GlobalConfig;
+import com.jasper.litebase.config.SessionConfig;
+import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.handler.MySQLAuthenticator;
 import com.jasper.litebase.server.handler.SQLCommandHandler;
 import com.jasper.litebase.server.protocol.codec.MySQLPacketDecoder;
 import com.jasper.litebase.server.protocol.codec.MySQLPacketEncoder;
@@ -19,7 +22,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +62,8 @@ public class LiteBaseServer {
                         //而客户端是先把请求转为字节（编码)，再把响应转为POJO（解码）
                         // 在InboundHandler执行完成需要调用Outbound的时候，比如ChannelHandlerContext.write()方法，
                         // Netty是直接从该InboundHandler返回逆序的查找该InboundHandler之前的OutboundHandler，并非从Pipeline的最后一项Handler开始查找
+
+                        BackendConnection c = new BackendConnection(ch, new SessionConfig());
                         ch.pipeline()
                                 // ByteBuf -> MySQLPacket
                                 .addLast("LengthFieldPrepender", new LengthFieldPrepender(ProtocolConstant.LENGTH_FIELD_LENGTH, ProtocolConstant.LENGTH_ADJUSTMENT))
@@ -69,7 +73,8 @@ public class LiteBaseServer {
                                 .addLast("LengthFieldBasedFrameDecoder", new LengthFieldBasedFrameDecoder(ProtocolConstant.MAX_FRAME_LENGTH, ProtocolConstant.LENGTH_FIELD_OFFSET, ProtocolConstant.LENGTH_FIELD_LENGTH, ProtocolConstant.LENGTH_ADJUSTMENT, ProtocolConstant.INITIAL_BYTES_TO_STRIP))
                                 // Message -> Message
                                 .addLast("MySQLPacketDecoder", new MySQLPacketDecoder())
-                                .addLast("SQLCommandHandler", new SQLCommandHandler());
+                                .addLast("MySQLAuthenticator", new MySQLAuthenticator(c))
+                                .addLast("SQLCommandHandler", new SQLCommandHandler(c));
                     }
                 })
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)

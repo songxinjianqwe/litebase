@@ -15,11 +15,10 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.net.FrontendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.MySQLMessage;
 
-import java.nio.ByteBuffer;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
 
 /**
  * From server to client after command, if no error and result set -- that is,
@@ -60,16 +59,14 @@ public class ResultSetHeaderPacket extends MySQLPacket {
     }
 
     @Override
-    public ByteBuffer write(ByteBuffer buffer, FrontendConnection c) {
+    void appendToBuffer(ByteBuf buffer) {
         int size = calcPacketSize();
-        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize() + size);
         BufferUtil.writeUB3(buffer, size);
-        buffer.put(packetId);
+        buffer.writeByte(packetId);
         BufferUtil.writeLength(buffer, fieldCount);
         if (extra > 0) {
             BufferUtil.writeLength(buffer, extra);
         }
-        return buffer;
     }
 
     @Override

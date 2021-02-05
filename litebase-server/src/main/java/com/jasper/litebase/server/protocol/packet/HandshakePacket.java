@@ -15,11 +15,10 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.net.FrontendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.MySQLMessage;
 
-import java.nio.ByteBuffer;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
 
 /**
  * From server to client during initial handshake.
@@ -55,7 +54,7 @@ public class HandshakePacket extends MySQLPacket {
     public int serverStatus;
     public byte[] restOfScrambleBuff;
 
-    public void read(com.alibaba.cobar.net.mysql.BinaryPacket bin) {
+    public void read(BinaryPacket bin) {
         packetLength = bin.packetLength;
         packetId = bin.packetId;
         MySQLMessage mm = new MySQLMessage(bin.data);
@@ -85,21 +84,20 @@ public class HandshakePacket extends MySQLPacket {
         restOfScrambleBuff = mm.readBytesWithNull();
     }
 
-    public void write(FrontendConnection c) {
-        ByteBuffer buffer = c.allocate();
+    @Override
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(protocolVersion);
+        buffer.writeByte(packetId);
+        buffer.writeByte(protocolVersion);
         BufferUtil.writeWithNull(buffer, serverVersion);
         BufferUtil.writeUB4(buffer, threadId);
         BufferUtil.writeWithNull(buffer, seed);
         BufferUtil.writeUB2(buffer, serverCapabilities);
-        buffer.put(serverCharsetIndex);
+        buffer.writeByte(serverCharsetIndex);
         BufferUtil.writeUB2(buffer, serverStatus);
-        buffer.put(FILLER_13);
+        buffer.writeBytes(FILLER_13);
         // buffer.position(buffer.position() + 13);
         BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
-        c.write(buffer);
     }
 
     @Override

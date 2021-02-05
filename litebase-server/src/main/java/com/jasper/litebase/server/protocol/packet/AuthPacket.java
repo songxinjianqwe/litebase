@@ -1,12 +1,12 @@
 /*
  * Copyright 1999-2012 Alibaba Group.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,19 +15,15 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.config.Capabilities;
-import com.alibaba.cobar.net.BackendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.MySQLMessage;
-import com.alibaba.cobar.server.mysql.StreamUtil;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import com.jasper.litebase.server.protocol.constant.Capabilities;
+import io.netty.buffer.ByteBuf;
 
 /**
  * From client to server during initial handshake.
- * 
+ *
  * <pre>
  * Bytes                        Name
  * -----                        ----
@@ -38,10 +34,10 @@ import java.nio.ByteBuffer;
  * n (Null-Terminated String)   user
  * n (Length Coded Binary)      scramble_buff (1 + x bytes)
  * n (Null-Terminated String)   databasename (optional)
- * 
+ *
  * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Client_Authentication_Packet
  * </pre>
- * 
+ *
  * @author xianmao.hexm 2010-7-15 下午04:35:34
  */
 public class AuthPacket extends MySQLPacket {
@@ -78,63 +74,31 @@ public class AuthPacket extends MySQLPacket {
         }
     }
 
-    public void write(OutputStream out) throws IOException {
-        StreamUtil.writeUB3(out, calcPacketSize());
-        StreamUtil.write(out, packetId);
-        StreamUtil.writeUB4(out, clientFlags);
-        StreamUtil.writeUB4(out, maxPacketSize);
-        StreamUtil.write(out, (byte) charsetIndex);
-        out.write(FILLER);
-        if (user == null) {
-            StreamUtil.write(out, (byte) 0);
-        } else {
-            StreamUtil.writeWithNull(out, user.getBytes());
-        }
-        if (password == null) {
-            StreamUtil.write(out, (byte) 0);
-        } else {
-            StreamUtil.writeWithLength(out, password);
-        }
-        if (database == null) {
-            StreamUtil.write(out, (byte) 0);
-        } else {
-            StreamUtil.writeWithNull(out, database.getBytes());
-        }
-    }
-
     @Override
-    public void write(BackendConnection c) {
-        ByteBuffer buffer = c.allocate();
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
+        buffer.writeByte(packetId);
         BufferUtil.writeUB4(buffer, clientFlags);
         BufferUtil.writeUB4(buffer, maxPacketSize);
-        buffer.put((byte) charsetIndex);
-        buffer = c.writeToBuffer(FILLER, buffer);
+        buffer.writeByte((byte) charsetIndex);
+        buffer.writeBytes(FILLER);
         if (user == null) {
-            buffer = c.checkWriteBuffer(buffer, 1);
-            buffer.put((byte) 0);
+            buffer.writeByte((byte) 0);
         } else {
             byte[] userData = user.getBytes();
-            buffer = c.checkWriteBuffer(buffer, userData.length + 1);
             BufferUtil.writeWithNull(buffer, userData);
         }
         if (password == null) {
-            buffer = c.checkWriteBuffer(buffer, 1);
-            buffer.put((byte) 0);
+            buffer.writeByte((byte) 0);
         } else {
-            buffer = c.checkWriteBuffer(buffer, BufferUtil.getLength(password));
             BufferUtil.writeWithLength(buffer, password);
         }
         if (database == null) {
-            buffer = c.checkWriteBuffer(buffer, 1);
-            buffer.put((byte) 0);
+            buffer.writeByte((byte) 0);
         } else {
             byte[] databaseData = database.getBytes();
-            buffer = c.checkWriteBuffer(buffer, databaseData.length + 1);
             BufferUtil.writeWithNull(buffer, databaseData);
         }
-        c.write(buffer);
     }
 
     @Override

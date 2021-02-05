@@ -16,6 +16,11 @@
 package com.jasper.litebase.server.protocol.packet;
 
 
+import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -52,15 +57,13 @@ public class EOFPacket extends MySQLPacket {
     }
 
     @Override
-    public ByteBuffer write(ByteBuffer buffer, FrontendConnection c) {
+    void appendToBuffer(ByteBuf buffer) {
         int size = calcPacketSize();
-        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize() + size);
         BufferUtil.writeUB3(buffer, size);
-        buffer.put(packetId);
-        buffer.put(fieldCount);
+        buffer.writeByte(packetId);
+        buffer.writeByte(fieldCount);
         BufferUtil.writeUB2(buffer, warningCount);
         BufferUtil.writeUB2(buffer, status);
-        return buffer;
     }
 
     @Override

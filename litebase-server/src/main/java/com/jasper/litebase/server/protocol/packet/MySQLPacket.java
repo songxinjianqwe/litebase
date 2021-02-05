@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 package com.jasper.litebase.server.protocol.packet;
+
+import com.jasper.litebase.server.connection.BackendConnection;
+import io.netty.buffer.ByteBuf;
+
 /**
  * @author xianmao.hexm
  */
@@ -171,6 +175,27 @@ public abstract class MySQLPacket {
     public int packetLength;
     public byte packetId;
 
+    /**
+     * 把数据包通过后端连接写出，一般使用buffer机制来提高写的吞吐量。
+     */
+    public final void write(BackendConnection c) {
+        ByteBuf buffer = c.allocate();
+        appendToBuffer(buffer);
+        c.writeBack(buffer);
+    }
+
+    /**
+     * 把数据包写到buffer中，如果buffer满了就把buffer通过前端连接写出。
+     */
+    public final void write(ByteBuf buffer) {
+        appendToBuffer(buffer);
+    }
+
+    /**
+     * TODO 这里可以优化下，把ByteBuf包装下，如果写满4K，就写回到客户端，然后清空；如果没有，就只写到ByteBuf
+     * @param buffer
+     */
+    abstract void appendToBuffer(ByteBuf buffer);
 
     /**
      * 计算数据包大小，不包含包头长度。

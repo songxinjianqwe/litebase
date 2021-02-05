@@ -15,11 +15,12 @@
  */
 package com.jasper.litebase.server.protocol.codec.util;
 
-import com.alibaba.cobar.config.ErrorCode;
-import com.alibaba.cobar.net.mysql.BinaryPacket;
-import com.alibaba.cobar.net.mysql.ErrorPacket;
-import com.alibaba.cobar.net.mysql.FieldPacket;
-import com.alibaba.cobar.net.mysql.ResultSetHeaderPacket;
+
+import com.jasper.litebase.server.protocol.constant.ErrorCode;
+import com.jasper.litebase.server.protocol.packet.BinaryPacket;
+import com.jasper.litebase.server.protocol.packet.ErrorPacket;
+import com.jasper.litebase.server.protocol.packet.FieldPacket;
+import com.jasper.litebase.server.protocol.packet.ResultSetHeaderPacket;
 
 import java.io.UnsupportedEncodingException;
 

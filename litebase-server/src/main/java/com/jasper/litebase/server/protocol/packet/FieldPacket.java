@@ -15,9 +15,9 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.net.FrontendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
 
 import java.nio.ByteBuffer;
 
@@ -85,14 +85,13 @@ public class FieldPacket extends MySQLPacket {
         readBody(new MySQLMessage(bin.data));
     }
 
+
     @Override
-    public ByteBuffer write(ByteBuffer buffer, FrontendConnection c) {
+    void appendToBuffer(ByteBuf buffer) {
         int size = calcPacketSize();
-        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize() + size);
         BufferUtil.writeUB3(buffer, size);
-        buffer.put(packetId);
+        buffer.writeByte(packetId);
         writeBody(buffer);
-        return buffer;
     }
 
     @Override
@@ -134,7 +133,7 @@ public class FieldPacket extends MySQLPacket {
         }
     }
 
-    private void writeBody(ByteBuffer buffer) {
+    private void writeBody(ByteBuf buffer) {
         byte nullVal = 0;
         BufferUtil.writeWithLength(buffer, catalog, nullVal);
         BufferUtil.writeWithLength(buffer, db, nullVal);
@@ -142,13 +141,13 @@ public class FieldPacket extends MySQLPacket {
         BufferUtil.writeWithLength(buffer, orgTable, nullVal);
         BufferUtil.writeWithLength(buffer, name, nullVal);
         BufferUtil.writeWithLength(buffer, orgName, nullVal);
-        buffer.put((byte) 0x0C);
+        buffer.writeByte((byte) 0x0C);
         BufferUtil.writeUB2(buffer, charsetIndex);
         BufferUtil.writeUB4(buffer, length);
-        buffer.put((byte) (type & 0xff));
+        buffer.writeByte((byte) (type & 0xff));
         BufferUtil.writeUB2(buffer, flags);
-        buffer.put(decimals);
-        buffer.position(buffer.position() + FILLER.length);
+        buffer.writeByte(decimals);
+        buffer.writeBytes(FILLER);
         if (definition != null) {
             BufferUtil.writeWithLength(buffer, definition);
         }

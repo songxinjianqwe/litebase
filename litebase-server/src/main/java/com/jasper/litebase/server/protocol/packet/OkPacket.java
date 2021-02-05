@@ -18,8 +18,7 @@ package com.jasper.litebase.server.protocol.packet;
 
 import com.jasper.litebase.server.protocol.codec.MySQLMessage;
 import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
-
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
 
 /**
  * From server to client in response to command, if no error and no result set.
@@ -78,11 +77,12 @@ public class OkPacket extends MySQLPacket {
         }
     }
 
-    public void write(FrontendConnection c) {
-        ByteBuffer buffer = c.allocate();
+
+    @Override
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(fieldCount);
+        buffer.writeByte(packetId);
+        buffer.writeByte(fieldCount);
         BufferUtil.writeLength(buffer, affectedRows);
         BufferUtil.writeLength(buffer, insertId);
         BufferUtil.writeUB2(buffer, serverStatus);
@@ -90,7 +90,6 @@ public class OkPacket extends MySQLPacket {
         if (message != null) {
             BufferUtil.writeWithLength(buffer, message);
         }
-        c.write(buffer);
     }
 
     @Override

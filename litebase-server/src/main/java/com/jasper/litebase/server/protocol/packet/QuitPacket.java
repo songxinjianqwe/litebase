@@ -15,11 +15,18 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * @author xianmao.hexm
  */
 public class QuitPacket extends MySQLPacket {
     public static final byte[] QUIT = new byte[] { 1, 0, 0, 0, 1 };
+
+    @Override
+    void appendToBuffer(ByteBuf buffer) {
+        buffer.writeBytes(QUIT);
+    }
 
     @Override
     public int calcPacketSize() {

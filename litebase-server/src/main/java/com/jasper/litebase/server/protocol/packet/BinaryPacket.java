@@ -15,9 +15,11 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.net.FrontendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.StreamUtil;
+
+import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import com.jasper.litebase.server.protocol.codec.util.StreamUtil;
+import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,12 +48,10 @@ public class BinaryPacket extends MySQLPacket {
     }
 
     @Override
-    public ByteBuffer write(ByteBuffer buffer, FrontendConnection c) {
-        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize());
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer = c.writeToBuffer(data, buffer);
-        return buffer;
+        buffer.writeByte(packetId);
+        buffer.writeBytes(data);
     }
 
     @Override

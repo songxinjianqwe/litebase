@@ -15,11 +15,11 @@
  */
 package com.jasper.litebase.server.protocol.packet;
 
-import com.alibaba.cobar.net.FrontendConnection;
-import com.alibaba.cobar.server.mysql.BufferUtil;
-import com.alibaba.cobar.server.mysql.MySQLMessage;
 
-import java.nio.ByteBuffer;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import io.netty.buffer.ByteBuf;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,22 +70,18 @@ public class RowDataPacket extends MySQLPacket {
     }
 
     @Override
-    public ByteBuffer write(ByteBuffer bb, FrontendConnection c) {
-        bb = c.checkWriteBuffer(bb, c.getPacketHeaderSize());
-        BufferUtil.writeUB3(bb, calcPacketSize());
-        bb.put(packetId);
+    void appendToBuffer(ByteBuf buffer) {
+        BufferUtil.writeUB3(buffer, calcPacketSize());
+        buffer.writeByte(packetId);
         for (int i = 0; i < fieldCount; i++) {
             byte[] fv = fieldValues.get(i);
             if (fv == null || fv.length == 0) {
-                bb = c.checkWriteBuffer(bb, 1);
-                bb.put(RowDataPacket.NULL_MARK);
+                buffer.writeByte(RowDataPacket.NULL_MARK);
             } else {
-                bb = c.checkWriteBuffer(bb, BufferUtil.getLength(fv.length));
-                BufferUtil.writeLength(bb, fv.length);
-                bb = c.writeToBuffer(fv, bb);
+                BufferUtil.writeLength(buffer, fv.length);
+                buffer.writeBytes(fv);
             }
         }
-        return bb;
     }
 
     @Override

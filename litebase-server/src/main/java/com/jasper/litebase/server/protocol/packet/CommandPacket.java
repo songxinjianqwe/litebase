@@ -16,9 +16,14 @@
 package com.jasper.litebase.server.protocol.packet;
 
 
+import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.protocol.codec.MySQLMessage;
+import com.jasper.litebase.server.protocol.codec.util.BufferUtil;
+import com.jasper.litebase.server.protocol.codec.util.StreamUtil;
+import io.netty.buffer.ByteBuf;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 /**
  * From client to server whenever the client wants the server to do something.
@@ -98,13 +103,11 @@ public class CommandPacket extends MySQLPacket {
     }
 
     @Override
-    public void write(BackendConnection c) {
-        ByteBuffer buffer = c.allocate();
+    void appendToBuffer(ByteBuf buffer) {
         BufferUtil.writeUB3(buffer, calcPacketSize());
-        buffer.put(packetId);
-        buffer.put(command);
-        buffer = c.writeToBuffer(arg, buffer);
-        c.write(buffer);
+        buffer.writeByte(packetId);
+        buffer.writeByte(command);
+        buffer.writeBytes(arg);
     }
 
     @Override
