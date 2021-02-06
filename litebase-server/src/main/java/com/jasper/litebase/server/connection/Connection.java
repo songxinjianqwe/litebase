@@ -4,30 +4,34 @@ import com.jasper.litebase.config.SessionConfig;
 import io.netty.buffer.ByteBuf;
 
 public interface Connection {
-    int PACKET_HEADER_SIZE = 4;
-    int MAX_PACKET_SIZE = 16 * 1024 * 1024;
+  int PACKET_HEADER_SIZE = 4;
+  int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
-    ByteBuf allocate();
+  ByteBuf allocate();
 
-    String getSchema();
+  String getSchema();
 
-    SessionConfig getSessionConfig();
+  SessionConfig getSessionConfig();
 
-    void writeBack(ByteBuf buffer);
+  void writeBack(ByteBuf buffer);
 
-    void heartbeat(byte[] data);
+  void heartbeat(byte[] data);
 
-    void kill(byte[] data);
+  void kill(byte[] data);
 
-    void close();
+  void handshake();
 
-    void ping();
+  void auth(byte[] data);
 
-    void query(byte[] data);
+  void close();
 
-    void initDB(byte[] data);
+  void ping();
 
-    void writeErrMessage(int errno, String msg);
+  void query(byte[] data);
 
-    void writeErrMessage(byte id, int errno, String msg);
+  void initDB(byte[] data);
+
+  void writeErrMessage(int errno, String msg);
+
+  void writeErrMessage(byte id, int errno, String msg);
 }

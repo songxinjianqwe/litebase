@@ -2,10 +2,17 @@ package com.jasper.litebase.server;
 
 import com.jasper.litebase.config.GlobalConfig;
 
-import java.net.UnknownHostException;
-
 public class Starter {
-    public static void main(String[] args) throws UnknownHostException, InterruptedException {
-        new LiteBaseServer(new GlobalConfig()).run();
+  private static LiteBaseServer server;
+
+  public static void main(String[] args) {
+    go();
+  }
+
+  public static synchronized void go() {
+    if (server == null) {
+      server = new LiteBaseServer(new GlobalConfig());
+      server.run();
     }
+  }
 }
