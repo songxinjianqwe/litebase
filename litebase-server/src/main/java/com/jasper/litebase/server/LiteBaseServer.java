@@ -4,9 +4,7 @@ import com.jasper.litebase.config.GlobalConfig;
 import com.jasper.litebase.config.SessionConfig;
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.handler.MySQLAuthenticator;
-import com.jasper.litebase.server.handler.SQLCommandHandler;
-import com.jasper.litebase.server.protocol.codec.MySQLPacketDecoder;
-import com.jasper.litebase.server.protocol.codec.MySQLPacketEncoder;
+import com.jasper.litebase.server.handler.SQLCommandDispatcher;
 import com.jasper.litebase.server.protocol.constant.ProtocolConstant;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -27,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class LiteBaseServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiteBaseServer.class);
@@ -34,6 +33,7 @@ public class LiteBaseServer {
     private GlobalConfig globalConfig;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+    private AtomicLong conectionIdSeq = new AtomicLong(0);
     private ChannelFuture channelFuture;
 
     public LiteBaseServer(GlobalConfig globalConfig) {
@@ -63,18 +63,10 @@ public class LiteBaseServer {
                         // 在InboundHandler执行完成需要调用Outbound的时候，比如ChannelHandlerContext.write()方法，
                         // Netty是直接从该InboundHandler返回逆序的查找该InboundHandler之前的OutboundHandler，并非从Pipeline的最后一项Handler开始查找
 
-                        BackendConnection c = new BackendConnection(ch, new SessionConfig());
+                        BackendConnection c = new BackendConnection(ch, new SessionConfig(), conectionIdSeq.incrementAndGet());
                         ch.pipeline()
-                                // ByteBuf -> MySQLPacket
-                                .addLast("LengthFieldPrepender", new LengthFieldPrepender(ProtocolConstant.LENGTH_FIELD_LENGTH, ProtocolConstant.LENGTH_ADJUSTMENT))
-                                // MySQLPacket -> ByteBuf
-                                .addLast("MySQLPacketEncoder", new MySQLPacketEncoder())
-                                // ByteBuf -> Message
-                                .addLast("LengthFieldBasedFrameDecoder", new LengthFieldBasedFrameDecoder(ProtocolConstant.MAX_FRAME_LENGTH, ProtocolConstant.LENGTH_FIELD_OFFSET, ProtocolConstant.LENGTH_FIELD_LENGTH, ProtocolConstant.LENGTH_ADJUSTMENT, ProtocolConstant.INITIAL_BYTES_TO_STRIP))
-                                // Message -> Message
-                                .addLast("MySQLPacketDecoder", new MySQLPacketDecoder())
                                 .addLast("MySQLAuthenticator", new MySQLAuthenticator(c))
-                                .addLast("SQLCommandHandler", new SQLCommandHandler(c));
+                                .addLast("SQLCommandHandler", new SQLCommandDispatcher(c));
                     }
                 })
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)

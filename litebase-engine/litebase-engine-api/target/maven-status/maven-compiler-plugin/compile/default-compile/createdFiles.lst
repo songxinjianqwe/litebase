@@ -1,0 +1,6 @@
+com/jasper/litebase/engine/api/EngineApi.class
+com/jasper/litebase/engine/domain/Table.class
+com/jasper/litebase/engine/domain/Column.class
+com/jasper/litebase/engine/domain/Schema.class
+com/jasper/litebase/engine/domain/ResultSet.class
+com/jasper/litebase/engine/domain/ResultSetMetaData.class

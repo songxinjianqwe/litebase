@@ -17,10 +17,10 @@ package com.jasper.litebase.server.protocol.codec.util;
 
 
 import com.jasper.litebase.server.protocol.constant.ErrorCode;
-import com.jasper.litebase.server.protocol.packet.BinaryPacket;
-import com.jasper.litebase.server.protocol.packet.ErrorPacket;
-import com.jasper.litebase.server.protocol.packet.FieldPacket;
-import com.jasper.litebase.server.protocol.packet.ResultSetHeaderPacket;
+import com.jasper.litebase.server.protocol.packet.server.BinaryPacket;
+import com.jasper.litebase.server.protocol.packet.server.ErrorPacket;
+import com.jasper.litebase.server.protocol.packet.server.FieldPacket;
+import com.jasper.litebase.server.protocol.packet.server.ResultSetHeaderPacket;
 
 import java.io.UnsupportedEncodingException;
 

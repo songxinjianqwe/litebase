@@ -39,7 +39,11 @@
             <artifactId>litebase-config</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.jasper</groupId>
+            <artifactId>litebase-sql</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
