@@ -10,7 +10,8 @@ public class SimpleTest {
     }
 
     @Test
-    public void test() throws ClassNotFoundException, SQLException {
+    public void test() throws ClassNotFoundException, SQLException, InterruptedException {
+        Thread.sleep(1000);
         Class.forName("com.mysql.jdbc.Driver");
         String url = "jdbc:mysql://localhost:9306/information_schema";
         String username = "root";

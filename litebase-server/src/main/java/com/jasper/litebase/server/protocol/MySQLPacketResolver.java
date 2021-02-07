@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 /** @author xianmao.hexm */
-public class MySQLMessage {
+public class MySQLPacketResolver {
     public static final long NULL_LENGTH = -1;
     private static final byte[] EMPTY_BYTES = new byte[0];
 
@@ -31,7 +31,7 @@ public class MySQLMessage {
     private final int length;
     private int position;
 
-    public MySQLMessage(byte[] data) {
+    public MySQLPacketResolver(byte[] data) {
         this.data = data;
         this.length = data.length;
         this.position = 0;

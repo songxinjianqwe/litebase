@@ -15,7 +15,7 @@
  */
 package com.jasper.litebase.server.protocol.util;
 
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.constant.Fields;
 import com.jasper.litebase.server.protocol.server.BindValue;
 import java.io.UnsupportedEncodingException;
@@ -23,7 +23,8 @@ import java.io.UnsupportedEncodingException;
 /** @author xianmao.hexm 2012-8-28 */
 public class BindValueUtil {
 
-    public static final void read(MySQLMessage mm, BindValue bv, String charset) throws UnsupportedEncodingException {
+    public static final void read(MySQLPacketResolver mm, BindValue bv, String charset)
+            throws UnsupportedEncodingException {
         switch (bv.type & 0xff) {
         case Fields.FIELD_TYPE_BIT:
             bv.value = mm.readBytesWithLength();

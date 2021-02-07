@@ -16,7 +16,7 @@
 package com.jasper.litebase.server.protocol.client;
 
 import com.jasper.litebase.server.protocol.ClientPacket;
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.util.BufferUtil;
 
 /**
@@ -33,7 +33,7 @@ public class HeartbeatPacket extends ClientPacket {
 
     @Override
     public void resolve(byte[] data) {
-        MySQLMessage mm = new MySQLMessage(data);
+        MySQLPacketResolver mm = new MySQLPacketResolver(data);
         packetLength = mm.readUB3();
         packetId = mm.read();
         command = mm.read();

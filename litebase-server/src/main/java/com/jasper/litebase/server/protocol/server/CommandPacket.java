@@ -15,7 +15,7 @@
  */
 package com.jasper.litebase.server.protocol.server;
 
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.MySQLPacket;
 import com.jasper.litebase.server.protocol.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
@@ -83,7 +83,7 @@ public class CommandPacket extends MySQLPacket {
     public byte[] arg;
 
     public void read(byte[] data) {
-        MySQLMessage mm = new MySQLMessage(data);
+        MySQLPacketResolver mm = new MySQLPacketResolver(data);
         packetLength = mm.readUB3();
         packetId = mm.read();
         command = mm.read();

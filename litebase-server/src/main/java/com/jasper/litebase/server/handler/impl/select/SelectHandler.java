@@ -1,5 +1,7 @@
-package com.jasper.litebase.server.handler.impl;
+package com.jasper.litebase.server.handler.impl.select;
 
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.handler.ComQueryHandler;
@@ -9,10 +11,9 @@ import com.jasper.litebase.server.protocol.server.FieldPacket;
 import com.jasper.litebase.server.protocol.server.ResultSetHeaderPacket;
 import com.jasper.litebase.server.protocol.server.RowDataPacket;
 import com.jasper.litebase.server.protocol.util.PacketUtil;
-import com.jasper.litebase.sql.parser.enumeration.QueryType;
 import io.netty.buffer.ByteBuf;
 
-public class SelectHandler extends ComQueryHandler {
+public class SelectHandler extends ComQueryHandler<SQLSelectStatement> {
 
     private static final int FIELD_COUNT = 1;
     private static final ResultSetHeaderPacket header = PacketUtil.getHeader(FIELD_COUNT);
@@ -28,8 +29,7 @@ public class SelectHandler extends ComQueryHandler {
     }
 
     @Override
-    public void handle(BackendConnection c, String sql) {
-
+    public void handle(BackendConnection c, String sql, SQLSelectStatement statement) {
         if (sql.contains("DATABASE") || sql.contains("database")) {
             ByteBuf buffer = c.allocate();
             header.writeToBuffer(buffer);
@@ -47,10 +47,5 @@ public class SelectHandler extends ComQueryHandler {
             lastEof.writeToBuffer(buffer);
             c.writeBack(buffer);
         }
-    }
-
-    @Override
-    protected QueryType operation() {
-        return QueryType.SELECT;
     }
 }

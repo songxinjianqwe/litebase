@@ -16,8 +16,14 @@ public class SQLCommandDispatcher extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        c.writeErrMessage(0, cause.getMessage());
+    }
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
+        // TODO将其改为直接从ByteBuf中读数据，这样就可以减少一次拷贝
         byte[] data = new byte[buf.writerIndex()];
         buf.getBytes(0, data);
         if (!authenticated) {

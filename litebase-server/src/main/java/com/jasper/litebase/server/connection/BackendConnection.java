@@ -3,7 +3,8 @@ package com.jasper.litebase.server.connection;
 import com.jasper.litebase.config.SessionConfig;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
 import com.jasper.litebase.config.util.RandomUtil;
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.handler.ComQueryHandler;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.MySQLPacket;
 import com.jasper.litebase.server.protocol.PacketCodec;
 import com.jasper.litebase.server.protocol.client.AuthPacket;
@@ -32,6 +33,7 @@ public class BackendConnection implements Connection {
     protected String schema;
     protected String user;
     protected byte[] seed;
+
     // session config
     protected SessionConfig sessionConfig;
 
@@ -116,7 +118,7 @@ public class BackendConnection implements Connection {
         }
 
         AuthPacket auth = PacketCodec.decode(AuthPacket.class, data);
-        LOGGER.info("user logging in, user:{}, pwd:{}, schema:{}", auth.user, auth.password, auth.database);
+        LOGGER.info("user logging in, user:{}, schema:{}", auth.user, auth.database);
         this.user = auth.user;
         this.schema = auth.database;
         this.sessionConfig.setCharsetIndex(auth.charsetIndex);
@@ -187,7 +189,7 @@ public class BackendConnection implements Connection {
     @Override
     public void query(byte[] data) {
         // 取得语句
-        MySQLMessage mm = new MySQLMessage(data);
+        MySQLPacketResolver mm = new MySQLPacketResolver(data);
         mm.position(5);
         String sql;
         String charset = sessionConfig.getCharset();
@@ -202,9 +204,8 @@ public class BackendConnection implements Connection {
             writeErrMessage(ErrorCode.ER_NOT_ALLOWED_COMMAND, "Empty SQL");
             return;
         }
-
         // 执行查询
-
+        ComQueryHandler.query(this, sql);
     }
 
     @Override

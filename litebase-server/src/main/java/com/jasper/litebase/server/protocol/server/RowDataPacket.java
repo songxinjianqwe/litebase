@@ -15,7 +15,7 @@
  */
 package com.jasper.litebase.server.protocol.server;
 
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.MySQLPacket;
 import com.jasper.litebase.server.protocol.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
@@ -57,15 +57,6 @@ public class RowDataPacket extends MySQLPacket {
 
     public void add(byte[] value) {
         fieldValues.add(value);
-    }
-
-    public void read(byte[] data) {
-        MySQLMessage mm = new MySQLMessage(data);
-        packetLength = mm.readUB3();
-        packetId = mm.read();
-        for (int i = 0; i < fieldCount; i++) {
-            fieldValues.add(mm.readBytesWithLength());
-        }
     }
 
     @Override

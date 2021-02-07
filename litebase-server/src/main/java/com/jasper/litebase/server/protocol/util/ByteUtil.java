@@ -15,7 +15,7 @@
  */
 package com.jasper.litebase.server.protocol.util;
 
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 
 /** @author xianmao.hexm */
 public class ByteUtil {
@@ -57,7 +57,7 @@ public class ByteUtil {
         int length = data[offset++] & 0xff;
         switch (length) {
         case 251:
-            return MySQLMessage.NULL_LENGTH;
+            return MySQLPacketResolver.NULL_LENGTH;
         case 252:
             return readUB2(data, offset);
         case 253:

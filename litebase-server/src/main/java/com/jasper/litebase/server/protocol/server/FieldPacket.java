@@ -15,7 +15,7 @@
  */
 package com.jasper.litebase.server.protocol.server;
 
-import com.jasper.litebase.server.protocol.MySQLMessage;
+import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.MySQLPacket;
 import com.jasper.litebase.server.protocol.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
@@ -66,7 +66,7 @@ public class FieldPacket extends MySQLPacket {
 
     /** 把字节数组转变成FieldPacket */
     public void read(byte[] data) {
-        MySQLMessage mm = new MySQLMessage(data);
+        MySQLPacketResolver mm = new MySQLPacketResolver(data);
         this.packetLength = mm.readUB3();
         this.packetId = mm.read();
         readBody(mm);
@@ -76,7 +76,7 @@ public class FieldPacket extends MySQLPacket {
     public void read(BinaryPacket bin) {
         this.packetLength = bin.packetLength;
         this.packetId = bin.packetId;
-        readBody(new MySQLMessage(bin.data));
+        readBody(new MySQLPacketResolver(bin.data));
     }
 
     @Override
@@ -107,7 +107,7 @@ public class FieldPacket extends MySQLPacket {
         return "MySQL Field Packet";
     }
 
-    private void readBody(MySQLMessage mm) {
+    private void readBody(MySQLPacketResolver mm) {
         this.catalog = mm.readBytesWithLength();
         this.db = mm.readBytesWithLength();
         this.table = mm.readBytesWithLength();
