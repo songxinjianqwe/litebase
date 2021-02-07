@@ -1,22 +1,36 @@
 package com.jasper.litebase.test;
 
 import com.jasper.litebase.server.Starter;
+
 import java.sql.*;
+
 import org.junit.Test;
 
 public class SimpleTest {
+    static boolean mysql = true;
+
     static {
-        Starter.go();
+        if (!mysql) {
+            Starter.go();
+        }
     }
 
     @Test
     public void test() throws ClassNotFoundException, SQLException, InterruptedException {
         Thread.sleep(1000);
         Class.forName("com.mysql.jdbc.Driver");
-        String url = "jdbc:mysql://localhost:9306/information_schema";
-        String username = "root";
-        String password = "123456";
-        Connection conn = DriverManager.getConnection(url, username, password);
+        Connection conn;
+        if (mysql) {
+            String url = "jdbc:mysql://localhost:33060/information_schema";
+            String username = "root";
+            String password = "";
+            conn = DriverManager.getConnection(url, username, password);
+        } else {
+            String url = "jdbc:mysql://localhost:9306/information_schema";
+            String username = "root";
+            String password = "123456";
+            conn = DriverManager.getConnection(url, username, password);
+        }
         Statement stmt = conn.createStatement();
         ResultSet resultSet = stmt.executeQuery("select database()");
         ResultSetMetaData metaData = resultSet.getMetaData();

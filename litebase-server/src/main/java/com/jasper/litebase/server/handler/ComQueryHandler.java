@@ -4,6 +4,9 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlShowVariantsStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlStatement;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
+import com.jasper.litebase.engine.domain.Field;
+import com.jasper.litebase.engine.domain.ResultSet;
+import com.jasper.litebase.engine.domain.ResultSetMetaData;
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.handler.impl.select.SelectHandler;
 import com.jasper.litebase.server.handler.impl.show.ShowVariablesHandler;
@@ -14,10 +17,14 @@ import com.jasper.litebase.server.protocol.server.RowDataPacket;
 import com.jasper.litebase.server.protocol.util.PacketUtil;
 import com.jasper.litebase.sql.parser.SQLParser;
 import io.netty.buffer.ByteBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public abstract class ComQueryHandler<T extends SQLStatement> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComQueryHandler.class);
+
     private static Map<Class<? extends SQLStatement>, ComQueryHandler<?>> HANDLERS = new HashMap<>();
 
     static {
@@ -25,7 +32,8 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
         HANDLERS.put(MySqlShowVariantsStatement.class, new ShowVariablesHandler());
     }
 
-    public static void query(BackendConnection c, String sql) {
+    public static void query(BackendConnection c, String sql, Long queryId) {
+        LOGGER.info("starting to execute COM_QUERY CMD, sql: {}, queryId:{}, conn: {}", sql, queryId, c);
         SQLStatement statement = SQLParser.parse(sql);
         Class<? extends SQLStatement> statementClass = statement.getClass();
         ComQueryHandler handler = HANDLERS.get(statementClass);
@@ -40,15 +48,21 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
     protected void writeBackResultSet(BackendConnection c, String sql, T statement) {
         ByteBuf buffer = c.allocate();
         byte packetId = 0;
-        int fieldCount = getFieldCount();
+
+        ResultSet resultSet = getResultSet(c, sql, statement);
+        ResultSetMetaData resultSetMetaData = resultSet.getResultSetMetaData();
+
+        int fieldCount = resultSetMetaData.getFieldCount();
+        List<Field> fields = resultSetMetaData.getFields();
+
         // header
         ResultSetHeaderPacket header = PacketUtil.getHeader(fieldCount);
         header.packetId = ++packetId;
         header.writeToBuffer(buffer);
 
         // fields
-        for (Map.Entry<String, Integer> entry : getFields().entrySet()) {
-            FieldPacket fieldPacket = PacketUtil.getField(entry.getKey(), entry.getValue());
+        for (Field field : fields) {
+            FieldPacket fieldPacket = PacketUtil.getField(field.getName(), field.getType());
             fieldPacket.packetId = ++packetId;
             fieldPacket.writeToBuffer(buffer);
         }
@@ -60,9 +74,10 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
 
         // rows
         RowDataPacket row = new RowDataPacket(fieldCount);
-        for (List<Object> fieldValues : getRows(c, sql, statement)) {
+        while (resultSet.next()) {
             row.fieldValues.clear();
-            for (Object fieldValue : fieldValues) {
+            for (int i = 0; i < fieldCount; i++) {
+                Object fieldValue = resultSet.getObject(i);
                 if (fieldValue instanceof byte[]) {
                     row.add((byte[]) fieldValue);
                 } else if (fieldValue instanceof String) {
@@ -75,6 +90,7 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
             row.writeToBuffer(buffer);
         }
 
+        // last eof
         EOFPacket lastEofPacket = new EOFPacket();
         lastEofPacket.packetId = ++packetId;
         lastEofPacket.writeToBuffer(buffer);
@@ -82,15 +98,7 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
         c.writeBack(buffer);
     }
 
-    protected int getFieldCount() {
-        return -1;
-    }
-
-    protected LinkedHashMap<String, Integer> getFields() {
-        return new LinkedHashMap<>();
-    }
-
-    protected List<List<Object>> getRows(BackendConnection c, String sql, T statement) {
-        return Collections.emptyList();
+    protected ResultSet getResultSet(BackendConnection c, String sql, T statement) {
+        return null;
     }
 }

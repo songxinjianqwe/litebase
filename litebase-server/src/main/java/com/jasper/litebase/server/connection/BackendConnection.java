@@ -8,9 +8,9 @@ import com.jasper.litebase.server.protocol.MySQLPacketResolver;
 import com.jasper.litebase.server.protocol.MySQLPacket;
 import com.jasper.litebase.server.protocol.PacketCodec;
 import com.jasper.litebase.server.protocol.client.AuthPacket;
-import com.jasper.litebase.server.protocol.constant.Capabilities;
-import com.jasper.litebase.server.protocol.constant.ErrorCode;
-import com.jasper.litebase.server.protocol.constant.Versions;
+import com.jasper.litebase.config.constant.Capabilities;
+import com.jasper.litebase.config.constant.ErrorCode;
+import com.jasper.litebase.config.constant.Versions;
 import com.jasper.litebase.server.protocol.server.ErrorPacket;
 import com.jasper.litebase.server.protocol.server.HandshakePacket;
 import com.jasper.litebase.server.protocol.server.QuitPacket;
@@ -18,6 +18,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.socket.SocketChannel;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,8 @@ public class BackendConnection implements Connection {
 
     protected SocketChannel socketChannel;
     protected ByteBufAllocator allocator;
+
+    private AtomicLong querySeq = new AtomicLong();
 
     // schema
     protected String schema;
@@ -205,7 +209,7 @@ public class BackendConnection implements Connection {
             return;
         }
         // 执行查询
-        ComQueryHandler.query(this, sql);
+        ComQueryHandler.query(this, sql, querySeq.incrementAndGet());
     }
 
     @Override

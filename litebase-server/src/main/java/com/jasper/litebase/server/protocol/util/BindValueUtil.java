@@ -16,7 +16,7 @@
 package com.jasper.litebase.server.protocol.util;
 
 import com.jasper.litebase.server.protocol.MySQLPacketResolver;
-import com.jasper.litebase.server.protocol.constant.Fields;
+import com.jasper.litebase.config.constant.Fields;
 import com.jasper.litebase.server.protocol.server.BindValue;
 import java.io.UnsupportedEncodingException;
 

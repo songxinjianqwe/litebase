@@ -2,7 +2,7 @@ package com.jasper.litebase.server.handler;
 
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.protocol.MySQLPacket;
-import com.jasper.litebase.server.protocol.constant.ErrorCode;
+import com.jasper.litebase.config.constant.ErrorCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

@@ -15,9 +15,9 @@
  */
 package com.jasper.litebase.server.protocol.util;
 
+import com.jasper.litebase.config.constant.ErrorCode;
 import com.jasper.litebase.config.util.CharsetUtil;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
-import com.jasper.litebase.server.protocol.constant.ErrorCode;
 import com.jasper.litebase.server.protocol.server.BinaryPacket;
 import com.jasper.litebase.server.protocol.server.ErrorPacket;
 import com.jasper.litebase.server.protocol.server.FieldPacket;

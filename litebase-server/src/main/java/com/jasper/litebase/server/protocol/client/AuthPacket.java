@@ -17,7 +17,7 @@ package com.jasper.litebase.server.protocol.client;
 
 import com.jasper.litebase.server.protocol.ClientPacket;
 import com.jasper.litebase.server.protocol.MySQLPacketResolver;
-import com.jasper.litebase.server.protocol.constant.Capabilities;
+import com.jasper.litebase.config.constant.Capabilities;
 import com.jasper.litebase.server.protocol.util.BufferUtil;
 
 /**

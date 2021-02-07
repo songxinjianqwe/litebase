@@ -1,11 +1,10 @@
 package com.jasper.litebase.server.handler.impl.select;
 
-import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.handler.ComQueryHandler;
-import com.jasper.litebase.server.protocol.constant.Fields;
+import com.jasper.litebase.config.constant.Fields;
 import com.jasper.litebase.server.protocol.server.EOFPacket;
 import com.jasper.litebase.server.protocol.server.FieldPacket;
 import com.jasper.litebase.server.protocol.server.ResultSetHeaderPacket;
