@@ -30,7 +30,7 @@ public interface Capabilities {
      * client_cmd: 11 10100110 10000101
      * client_jdbc:10 10100010 10001111
      *  
-     * @see http://dev.mysql.com/doc/refman/5.1/en/mysql-real-connect.html
+     * &#64;see http://dev.mysql.com/doc/refman/5.1/en/mysql-real-connect.html
      * </pre>
      */
     // new more secure passwords

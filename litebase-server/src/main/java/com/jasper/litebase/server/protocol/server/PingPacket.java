@@ -20,20 +20,20 @@ import io.netty.buffer.ByteBuf;
 
 /** @author xianmao.hexm 2012-4-28 */
 public class PingPacket extends MySQLPacket {
-  public static final byte[] PING = new byte[] {1, 0, 0, 0, 14};
+    public static final byte[] PING = new byte[] { 1, 0, 0, 0, 14 };
 
-  @Override
-  public void writeToBuffer(ByteBuf buffer) {
-    buffer.writeBytes(PING);
-  }
+    @Override
+    public void writeToBuffer(ByteBuf buffer) {
+        buffer.writeBytes(PING);
+    }
 
-  @Override
-  public int calcPacketSize() {
-    return 1;
-  }
+    @Override
+    public int calcPacketSize() {
+        return 1;
+    }
 
-  @Override
-  protected String getPacketInfo() {
-    return "MySQL Ping Packet";
-  }
+    @Override
+    protected String getPacketInfo() {
+        return "MySQL Ping Packet";
+    }
 }

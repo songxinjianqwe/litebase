@@ -24,38 +24,38 @@ import java.io.InputStream;
 
 /** @author xianmao.hexm 2011-5-6 上午10:58:33 */
 public class BinaryPacket extends MySQLPacket {
-  public static final byte OK = 1;
-  public static final byte ERROR = 2;
-  public static final byte HEADER = 3;
-  public static final byte FIELD = 4;
-  public static final byte FIELD_EOF = 5;
-  public static final byte ROW = 6;
-  public static final byte PACKET_EOF = 7;
+    public static final byte OK = 1;
+    public static final byte ERROR = 2;
+    public static final byte HEADER = 3;
+    public static final byte FIELD = 4;
+    public static final byte FIELD_EOF = 5;
+    public static final byte ROW = 6;
+    public static final byte PACKET_EOF = 7;
 
-  public byte[] data;
+    public byte[] data;
 
-  public void read(InputStream in) throws IOException {
-    packetLength = StreamUtil.readUB3(in);
-    packetId = StreamUtil.read(in);
-    byte[] ab = new byte[packetLength];
-    StreamUtil.read(in, ab, 0, ab.length);
-    data = ab;
-  }
+    public void read(InputStream in) throws IOException {
+        packetLength = StreamUtil.readUB3(in);
+        packetId = StreamUtil.read(in);
+        byte[] ab = new byte[packetLength];
+        StreamUtil.read(in, ab, 0, ab.length);
+        data = ab;
+    }
 
-  @Override
-  public void writeToBuffer(ByteBuf buffer) {
-    BufferUtil.writeUB3(buffer, calcPacketSize());
-    buffer.writeByte(packetId);
-    buffer.writeBytes(data);
-  }
+    @Override
+    public void writeToBuffer(ByteBuf buffer) {
+        BufferUtil.writeUB3(buffer, calcPacketSize());
+        buffer.writeByte(packetId);
+        buffer.writeBytes(data);
+    }
 
-  @Override
-  public int calcPacketSize() {
-    return data == null ? 0 : data.length;
-  }
+    @Override
+    public int calcPacketSize() {
+        return data == null ? 0 : data.length;
+    }
 
-  @Override
-  protected String getPacketInfo() {
-    return "MySQL Binary Packet";
-  }
+    @Override
+    protected String getPacketInfo() {
+        return "MySQL Binary Packet";
+    }
 }

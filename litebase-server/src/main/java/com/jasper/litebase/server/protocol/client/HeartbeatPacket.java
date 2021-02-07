@@ -23,33 +23,30 @@ import com.jasper.litebase.server.protocol.util.BufferUtil;
  * From client to server when the client do heartbeat between cobar cluster.
  *
  * <pre>
- * Bytes         Name
- * -----         ----
- * 1             command
- * n             id
+ * Bytes Name ----- ---- 1 command n id
  *
  * @author haiqing.zhuhq 2012-07-06
  */
 public class HeartbeatPacket extends ClientPacket {
-  public byte command;
-  public long id;
+    public byte command;
+    public long id;
 
-  @Override
-  public void resolve(byte[] data) {
-    MySQLMessage mm = new MySQLMessage(data);
-    packetLength = mm.readUB3();
-    packetId = mm.read();
-    command = mm.read();
-    id = mm.readLength();
-  }
+    @Override
+    public void resolve(byte[] data) {
+        MySQLMessage mm = new MySQLMessage(data);
+        packetLength = mm.readUB3();
+        packetId = mm.read();
+        command = mm.read();
+        id = mm.readLength();
+    }
 
-  @Override
-  public int calcPacketSize() {
-    return 1 + BufferUtil.getLength(id);
-  }
+    @Override
+    public int calcPacketSize() {
+        return 1 + BufferUtil.getLength(id);
+    }
 
-  @Override
-  protected String getPacketInfo() {
-    return "Cobar Heartbeat Packet";
-  }
+    @Override
+    protected String getPacketInfo() {
+        return "Cobar Heartbeat Packet";
+    }
 }

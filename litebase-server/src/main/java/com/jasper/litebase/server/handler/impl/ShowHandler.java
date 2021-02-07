@@ -12,6 +12,6 @@ public class ShowHandler extends ComQueryHandler {
 
     @Override
     public void handle(BackendConnection c, String sql) {
-        
+
     }
 }

@@ -72,39 +72,39 @@ import io.netty.buffer.ByteBuf;
  *               the size can be calculated from the packet size,
  *               and the MySQL client appends '\0' when receiving.
  *
- * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Command_Packet_.28Overview.29
+ * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Command_Packet_.28Overview.29
  * </pre>
  *
  * @author xianmao.hexm 2010-7-15 下午04:35:34
  */
 public class CommandPacket extends MySQLPacket {
 
-  public byte command;
-  public byte[] arg;
+    public byte command;
+    public byte[] arg;
 
-  public void read(byte[] data) {
-    MySQLMessage mm = new MySQLMessage(data);
-    packetLength = mm.readUB3();
-    packetId = mm.read();
-    command = mm.read();
-    arg = mm.readBytes();
-  }
+    public void read(byte[] data) {
+        MySQLMessage mm = new MySQLMessage(data);
+        packetLength = mm.readUB3();
+        packetId = mm.read();
+        command = mm.read();
+        arg = mm.readBytes();
+    }
 
-  @Override
-  public void writeToBuffer(ByteBuf buffer) {
-    BufferUtil.writeUB3(buffer, calcPacketSize());
-    buffer.writeByte(packetId);
-    buffer.writeByte(command);
-    buffer.writeBytes(arg);
-  }
+    @Override
+    public void writeToBuffer(ByteBuf buffer) {
+        BufferUtil.writeUB3(buffer, calcPacketSize());
+        buffer.writeByte(packetId);
+        buffer.writeByte(command);
+        buffer.writeBytes(arg);
+    }
 
-  @Override
-  public int calcPacketSize() {
-    return 1 + arg.length;
-  }
+    @Override
+    public int calcPacketSize() {
+        return 1 + arg.length;
+    }
 
-  @Override
-  protected String getPacketInfo() {
-    return "MySQL Command Packet";
-  }
+    @Override
+    protected String getPacketInfo() {
+        return "MySQL Command Packet";
+    }
 }

@@ -42,46 +42,46 @@ import io.netty.buffer.ByteBuf;
  * @author xianmao.hexm 2010-7-14 下午05:18:15
  */
 public class HandshakePacket extends MySQLPacket {
-  private static final byte[] FILLER_13 = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private static final byte[] FILLER_13 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  public byte protocolVersion;
-  public byte[] serverVersion;
-  public long threadId;
-  public byte[] seed;
-  public int serverCapabilities;
-  public byte serverCharsetIndex;
-  public int serverStatus;
-  public byte[] restOfScrambleBuff;
+    public byte protocolVersion;
+    public byte[] serverVersion;
+    public long threadId;
+    public byte[] seed;
+    public int serverCapabilities;
+    public byte serverCharsetIndex;
+    public int serverStatus;
+    public byte[] restOfScrambleBuff;
 
-  @Override
-  public void writeToBuffer(ByteBuf buffer) {
-    BufferUtil.writeUB3(buffer, calcPacketSize());
-    buffer.writeByte(packetId);
-    buffer.writeByte(protocolVersion);
-    BufferUtil.writeWithNull(buffer, serverVersion);
-    BufferUtil.writeUB4(buffer, threadId);
-    BufferUtil.writeWithNull(buffer, seed);
-    BufferUtil.writeUB2(buffer, serverCapabilities);
-    buffer.writeByte(serverCharsetIndex);
-    BufferUtil.writeUB2(buffer, serverStatus);
-    buffer.writeBytes(FILLER_13);
-    BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
-  }
+    @Override
+    public void writeToBuffer(ByteBuf buffer) {
+        BufferUtil.writeUB3(buffer, calcPacketSize());
+        buffer.writeByte(packetId);
+        buffer.writeByte(protocolVersion);
+        BufferUtil.writeWithNull(buffer, serverVersion);
+        BufferUtil.writeUB4(buffer, threadId);
+        BufferUtil.writeWithNull(buffer, seed);
+        BufferUtil.writeUB2(buffer, serverCapabilities);
+        buffer.writeByte(serverCharsetIndex);
+        BufferUtil.writeUB2(buffer, serverStatus);
+        buffer.writeBytes(FILLER_13);
+        BufferUtil.writeWithNull(buffer, restOfScrambleBuff);
+    }
 
-  @Override
-  public int calcPacketSize() {
-    int size = 1;
-    size += serverVersion.length; // n
-    size += 5; // 1+4
-    size += seed.length; // 8
-    size += 19; // 1+2+1+2+13
-    size += restOfScrambleBuff.length; // 12
-    size += 1; // 1
-    return size;
-  }
+    @Override
+    public int calcPacketSize() {
+        int size = 1;
+        size += serverVersion.length; // n
+        size += 5; // 1+4
+        size += seed.length; // 8
+        size += 19; // 1+2+1+2+13
+        size += restOfScrambleBuff.length; // 12
+        size += 1; // 1
+        return size;
+    }
 
-  @Override
-  protected String getPacketInfo() {
-    return "MySQL Handshake Packet";
-  }
+    @Override
+    protected String getPacketInfo() {
+        return "MySQL Handshake Packet";
+    }
 }

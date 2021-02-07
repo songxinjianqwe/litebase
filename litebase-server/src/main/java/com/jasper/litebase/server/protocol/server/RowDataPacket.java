@@ -39,62 +39,62 @@ import java.util.List;
  *                         single byte containing 251(see the description
  *                         of Length Coded Strings in section "Elements" above).
  *
- * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Row_Data_Packet
+ * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#Row_Data_Packet
  * </pre>
  *
  * @author xianmao.hexm 2010-7-23 上午01:05:55
  */
 public class RowDataPacket extends MySQLPacket {
-  private static final byte NULL_MARK = (byte) 251;
+    private static final byte NULL_MARK = (byte) 251;
 
-  public final int fieldCount;
-  public final List<byte[]> fieldValues;
+    public final int fieldCount;
+    public final List<byte[]> fieldValues;
 
-  public RowDataPacket(int fieldCount) {
-    this.fieldCount = fieldCount;
-    this.fieldValues = new ArrayList<byte[]>(fieldCount);
-  }
-
-  public void add(byte[] value) {
-    fieldValues.add(value);
-  }
-
-  public void read(byte[] data) {
-    MySQLMessage mm = new MySQLMessage(data);
-    packetLength = mm.readUB3();
-    packetId = mm.read();
-    for (int i = 0; i < fieldCount; i++) {
-      fieldValues.add(mm.readBytesWithLength());
+    public RowDataPacket(int fieldCount) {
+        this.fieldCount = fieldCount;
+        this.fieldValues = new ArrayList<byte[]>(fieldCount);
     }
-  }
 
-  @Override
-  public void writeToBuffer(ByteBuf buffer) {
-    BufferUtil.writeUB3(buffer, calcPacketSize());
-    buffer.writeByte(packetId);
-    for (int i = 0; i < fieldCount; i++) {
-      byte[] fv = fieldValues.get(i);
-      if (fv == null || fv.length == 0) {
-        buffer.writeByte(RowDataPacket.NULL_MARK);
-      } else {
-        BufferUtil.writeLength(buffer, fv.length);
-        buffer.writeBytes(fv);
-      }
+    public void add(byte[] value) {
+        fieldValues.add(value);
     }
-  }
 
-  @Override
-  public int calcPacketSize() {
-    int size = 0;
-    for (int i = 0; i < fieldCount; i++) {
-      byte[] v = fieldValues.get(i);
-      size += (v == null || v.length == 0) ? 1 : BufferUtil.getLength(v);
+    public void read(byte[] data) {
+        MySQLMessage mm = new MySQLMessage(data);
+        packetLength = mm.readUB3();
+        packetId = mm.read();
+        for (int i = 0; i < fieldCount; i++) {
+            fieldValues.add(mm.readBytesWithLength());
+        }
     }
-    return size;
-  }
 
-  @Override
-  protected String getPacketInfo() {
-    return "MySQL RowData Packet";
-  }
+    @Override
+    public void writeToBuffer(ByteBuf buffer) {
+        BufferUtil.writeUB3(buffer, calcPacketSize());
+        buffer.writeByte(packetId);
+        for (int i = 0; i < fieldCount; i++) {
+            byte[] fv = fieldValues.get(i);
+            if (fv == null || fv.length == 0) {
+                buffer.writeByte(RowDataPacket.NULL_MARK);
+            } else {
+                BufferUtil.writeLength(buffer, fv.length);
+                buffer.writeBytes(fv);
+            }
+        }
+    }
+
+    @Override
+    public int calcPacketSize() {
+        int size = 0;
+        for (int i = 0; i < fieldCount; i++) {
+            byte[] v = fieldValues.get(i);
+            size += (v == null || v.length == 0) ? 1 : BufferUtil.getLength(v);
+        }
+        return size;
+    }
+
+    @Override
+    protected String getPacketInfo() {
+        return "MySQL RowData Packet";
+    }
 }

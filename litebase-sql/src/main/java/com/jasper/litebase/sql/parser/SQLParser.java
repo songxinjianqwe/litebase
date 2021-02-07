@@ -14,12 +14,12 @@ public class SQLParser {
         mySqlLexer.skipFirstHintsOrMultiCommentAndNextToken();
         Token token = mySqlLexer.token();
         QueryType queryType;
-        if(token != null) {
+        if (token != null) {
             queryType = QueryType.getByToken(token);
         } else {
             queryType = QueryType.valueOf(mySqlLexer.stringVal().toUpperCase());
         }
-        if(queryType == null) {
+        if (queryType == null) {
             throw new IllegalArgumentException("unsupported sql :" + sql);
         }
         return queryType;

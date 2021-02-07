@@ -21,9 +21,8 @@ import com.jasper.litebase.server.protocol.util.BufferUtil;
 import io.netty.buffer.ByteBuf;
 
 /**
- * From Server To Client, at the end of a series of Field Packets, and at the
- * end of a series of Data Packets.With prepared statements, EOF Packet can also
- * end parameter information, which we'll describe later.
+ * From Server To Client, at the end of a series of Field Packets, and at the end of a series of Data Packets.With
+ * prepared statements, EOF Packet can also end parameter information, which we'll describe later.
  *
  * <pre>
  * Bytes                 Name
@@ -32,44 +31,44 @@ import io.netty.buffer.ByteBuf;
  * 2                     warning_count
  * 2                     Status Flags
  *
- * @see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#EOF_Packet
+ * &#64;see http://forge.mysql.com/wiki/MySQL_Internals_ClientServer_Protocol#EOF_Packet
  * </pre>
  *
  * @author xianmao.hexm 2010-7-16 上午10:55:53
  */
 public class EOFPacket extends MySQLPacket {
-  public static final byte FIELD_COUNT = (byte) 0xfe;
+    public static final byte FIELD_COUNT = (byte) 0xfe;
 
-  public byte fieldCount = FIELD_COUNT;
-  public int warningCount;
-  public int status = 2;
+    public byte fieldCount = FIELD_COUNT;
+    public int warningCount;
+    public int status = 2;
 
-  public void read(byte[] data) {
-    MySQLMessage mm = new MySQLMessage(data);
-    packetLength = mm.readUB3();
-    packetId = mm.read();
-    fieldCount = mm.read();
-    warningCount = mm.readUB2();
-    status = mm.readUB2();
-  }
+    public void read(byte[] data) {
+        MySQLMessage mm = new MySQLMessage(data);
+        packetLength = mm.readUB3();
+        packetId = mm.read();
+        fieldCount = mm.read();
+        warningCount = mm.readUB2();
+        status = mm.readUB2();
+    }
 
-  @Override
-  public void writeToBuffer(ByteBuf buffer) {
-    int size = calcPacketSize();
-    BufferUtil.writeUB3(buffer, size);
-    buffer.writeByte(packetId);
-    buffer.writeByte(fieldCount);
-    BufferUtil.writeUB2(buffer, warningCount);
-    BufferUtil.writeUB2(buffer, status);
-  }
+    @Override
+    public void writeToBuffer(ByteBuf buffer) {
+        int size = calcPacketSize();
+        BufferUtil.writeUB3(buffer, size);
+        buffer.writeByte(packetId);
+        buffer.writeByte(fieldCount);
+        BufferUtil.writeUB2(buffer, warningCount);
+        BufferUtil.writeUB2(buffer, status);
+    }
 
-  @Override
-  public int calcPacketSize() {
-    return 5; // 1+2+2;
-  }
+    @Override
+    public int calcPacketSize() {
+        return 5; // 1+2+2;
+    }
 
-  @Override
-  protected String getPacketInfo() {
-    return "MySQL EOF Packet";
-  }
+    @Override
+    protected String getPacketInfo() {
+        return "MySQL EOF Packet";
+    }
 }
