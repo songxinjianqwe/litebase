@@ -32,6 +32,12 @@ public class PersistStoreEngine extends StoreEngine {
 
     @Override
     public ResultSet query(ExecutionContext context, String schema, String table, String whereClause) {
+        if (!handlers.containsKey(schema)) {
+            throw new IllegalArgumentException("cannot find handler for schema: " + schema);
+        }
+        if (!handlers.get(schema).containsKey(table)) {
+            throw new IllegalArgumentException("cannot find handler for table: " + table);
+        }
         return handlers.get(schema).get(table).query(context, schema, table, whereClause);
     }
 }

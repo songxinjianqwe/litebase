@@ -93,6 +93,7 @@ public class BackendConnection implements Connection {
 
     @Override
     public void kill(byte[] data) {
+        close();
     }
 
     /** 建联之后立即发送 */
@@ -194,6 +195,12 @@ public class BackendConnection implements Connection {
 
     @Override
     public void close() {
+        LOGGER.info("closing connection {}...", this);
+        try {
+            socketChannel.close().sync();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

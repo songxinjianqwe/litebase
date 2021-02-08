@@ -34,7 +34,7 @@ public class SimpleTest {
         Statement stmt = conn.createStatement();
         ResultSet resultSet = stmt.executeQuery("select database()");
         ResultSetMetaData metaData = resultSet.getMetaData();
-        for (int i = 0; i < metaData.getColumnCount(); i++) {
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
             String columnClassName = metaData.getColumnClassName(i);
             String columnName = metaData.getColumnName(i);
             int columnType = metaData.getColumnType(i);

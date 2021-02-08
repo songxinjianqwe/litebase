@@ -37,21 +37,27 @@ public class SQLCommandDispatcher extends ChannelInboundHandlerAdapter {
         }
         switch (data[4]) {
         case MySQLPacket.COM_INIT_DB:
+            LOGGER.info("received COM_INIT_DB req");
             c.initDB(data);
             break;
         case MySQLPacket.COM_QUERY:
+            LOGGER.info("received COM_QUERY req");
             c.query(data);
             break;
         case MySQLPacket.COM_PING:
+            LOGGER.info("received COM_PING req");
             c.ping();
             break;
         case MySQLPacket.COM_QUIT:
+            LOGGER.info("received COM_QUIT req");
             c.close();
             break;
         case MySQLPacket.COM_PROCESS_KILL:
+            LOGGER.info("received COM_PROCESS_KILL req");
             c.kill(data);
             break;
         case MySQLPacket.COM_HEARTBEAT:
+            LOGGER.info("received COM_HEARTBEAT req");
             c.heartbeat(data);
             break;
         default:
