@@ -6,8 +6,11 @@ import com.jasper.litebase.config.constant.ErrorCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SQLCommandDispatcher extends ChannelInboundHandlerAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SQLCommandDispatcher.class);
     protected BackendConnection c;
     protected boolean authenticated = false;
 
@@ -17,6 +20,7 @@ public class SQLCommandDispatcher extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        LOGGER.error("execute sql failed, caused by: ", cause);
         c.writeErrMessage(0, cause.getMessage());
     }
 

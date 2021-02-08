@@ -7,7 +7,7 @@ import java.sql.*;
 import org.junit.Test;
 
 public class SimpleTest {
-    static boolean mysql = true;
+    static boolean mysql = false;
 
     static {
         if (!mysql) {

@@ -51,7 +51,7 @@ public class LiteBaseServer {
                     // 对Channel进行初始化，绑定实际的事件处理器，要么实现ChannelHandler接口，要么继承ChannelHandlerAdapter类
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel ch) {
-                            BackendConnection c = new BackendConnection(ch, new SessionConfig(),
+                            BackendConnection c = new BackendConnection(ch, globalConfig, new SessionConfig(),
                                     conectionIdSeq.incrementAndGet());
                             c.handshake();
                             ch.pipeline().addLast("SQLCommandHandler", new SQLCommandDispatcher(c));

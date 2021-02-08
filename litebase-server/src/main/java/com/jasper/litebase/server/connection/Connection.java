@@ -1,5 +1,6 @@
 package com.jasper.litebase.server.connection;
 
+import com.jasper.litebase.config.GlobalConfig;
 import com.jasper.litebase.config.SessionConfig;
 import io.netty.buffer.ByteBuf;
 
@@ -12,6 +13,8 @@ public interface Connection {
     String getSchema();
 
     SessionConfig getSessionConfig();
+
+    GlobalConfig getGlobalConfig();
 
     void writeBack(ByteBuf buffer);
 

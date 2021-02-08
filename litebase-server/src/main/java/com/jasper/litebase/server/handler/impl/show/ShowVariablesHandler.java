@@ -1,20 +1,17 @@
 package com.jasper.litebase.server.handler.impl.show;
 
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlShowVariantsStatement;
-import com.jasper.litebase.engine.api.EngineApi;
+import com.jasper.litebase.engine.api.StoreEngine;
+import com.jasper.litebase.engine.domain.ExecutionContext;
 import com.jasper.litebase.engine.domain.ResultSet;
 import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.engine.EngineManager;
 import com.jasper.litebase.server.handler.ComQueryHandler;
 
 public class ShowVariablesHandler extends ComQueryHandler<MySqlShowVariantsStatement> {
 
     @Override
-    public void handle(BackendConnection c, String sql, MySqlShowVariantsStatement statement) {
-        super.writeBackResultSet(c, sql, statement);
-    }
-
-    @Override
-    protected ResultSet getResultSet(BackendConnection c, String sql, MySqlShowVariantsStatement statement) {
+    protected ResultSet doQuery(BackendConnection c, Long queryId, String sql, MySqlShowVariantsStatement statement) {
         String where = null;
         if (statement.getWhere() != null) {
             where = statement.getWhere().toString();
@@ -36,6 +33,7 @@ public class ShowVariablesHandler extends ComQueryHandler<MySqlShowVariantsState
             // return input.matches(expr);
             // };
         }
-        return EngineApi.getInstance().query("performance_schema", "session_variables", where);
+        return EngineManager.getInstance(c.getGlobalConfig().getEngineType()).query(
+                new ExecutionContext(queryId, c.getSessionConfig()), "performance_schema", "session_variables", where);
     }
 }

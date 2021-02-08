@@ -1,8 +1,12 @@
 package com.jasper.litebase.server.handler.impl.select;
 
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
+import com.jasper.litebase.engine.domain.ExecutionContext;
+import com.jasper.litebase.engine.domain.ResultSet;
 import com.jasper.litebase.server.connection.BackendConnection;
+import com.jasper.litebase.server.engine.EngineManager;
 import com.jasper.litebase.server.handler.ComQueryHandler;
 import com.jasper.litebase.config.constant.Fields;
 import com.jasper.litebase.server.protocol.server.EOFPacket;
@@ -28,23 +32,27 @@ public class SelectHandler extends ComQueryHandler<SQLSelectStatement> {
     }
 
     @Override
-    public void handle(BackendConnection c, String sql, SQLSelectStatement statement) {
-        if (sql.contains("DATABASE") || sql.contains("database")) {
-            ByteBuf buffer = c.allocate();
-            header.writeToBuffer(buffer);
-            for (FieldPacket field : fields) {
-                field.writeToBuffer(buffer);
-            }
-            eof.writeToBuffer(buffer);
-            byte packetId = eof.packetId;
-            RowDataPacket row = new RowDataPacket(FIELD_COUNT);
-            row.add(LiteBaseStringUtil.encode(c.getSchema(), c.getSessionConfig().getCharset()));
-            row.packetId = ++packetId;
-            row.writeToBuffer(buffer);
-            EOFPacket lastEof = new EOFPacket();
-            lastEof.packetId = ++packetId;
-            lastEof.writeToBuffer(buffer);
-            c.writeBack(buffer);
-        }
+    protected ResultSet doQuery(BackendConnection c, Long queryId, String sql, SQLSelectStatement statement) {
+        //
+        return EngineManager.getInstance(c.getGlobalConfig().getEngineType())
+                .query(new ExecutionContext(queryId, c.getSessionConfig()), "", "", null);
     }
+
+    // if (sql.contains("DATABASE") || sql.contains("database")) {
+    // ByteBuf buffer = c.allocate();
+    // header.writeToBuffer(buffer);
+    // for (FieldPacket field : fields) {
+    // field.writeToBuffer(buffer);
+    // }
+    // eof.writeToBuffer(buffer);
+    // byte packetId = eof.packetId;
+    // RowDataPacket row = new RowDataPacket(FIELD_COUNT);
+    // row.add(LiteBaseStringUtil.encode(c.getSchema(), c.getSessionConfig().getCharset()));
+    // row.packetId = ++packetId;
+    // row.writeToBuffer(buffer);
+    // EOFPacket lastEof = new EOFPacket();
+    // lastEof.packetId = ++packetId;
+    // lastEof.writeToBuffer(buffer);
+    // c.writeBack(buffer);
+    // }
 }

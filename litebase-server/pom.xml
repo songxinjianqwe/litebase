@@ -49,6 +49,11 @@
             <artifactId>litebase-engine-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.jasper</groupId>
+            <artifactId>litebase-engine-persist</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,17 +1,9 @@
 package com.jasper.litebase.engine.domain;
 
-public class ResultSet {
-    private ResultSetMetaData resultSetMetaData;
+public interface ResultSet {
+    boolean next();
 
-    public boolean next() {
-        return false;
-    }
+    Object getObject(int columnIndex);
 
-    public Object getObject(int columnIndex) {
-        return null;
-    }
-
-    public ResultSetMetaData getResultSetMetaData() {
-        return resultSetMetaData;
-    }
+    ResultSetMetaData getResultSetMetaData();
 }

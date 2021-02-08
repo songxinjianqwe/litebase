@@ -1,5 +1,6 @@
 package com.jasper.litebase.server.connection;
 
+import com.jasper.litebase.config.GlobalConfig;
 import com.jasper.litebase.config.SessionConfig;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
 import com.jasper.litebase.config.util.RandomUtil;
@@ -20,6 +21,7 @@ import io.netty.channel.socket.SocketChannel;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import jdk.nashorn.internal.objects.Global;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,7 @@ public class BackendConnection implements Connection {
     protected byte[] seed;
 
     // session config
+    protected GlobalConfig globalConfig;
     protected SessionConfig sessionConfig;
 
     // meta
@@ -47,8 +50,10 @@ public class BackendConnection implements Connection {
     protected int remotePort;
     protected int localPort;
 
-    public BackendConnection(SocketChannel socketChannel, SessionConfig sessionConfig, long id) {
+    public BackendConnection(SocketChannel socketChannel, GlobalConfig globalConfig, SessionConfig sessionConfig,
+            long id) {
         this.socketChannel = socketChannel;
+        this.globalConfig = globalConfig;
         this.sessionConfig = sessionConfig;
         this.connectionId = id;
         this.allocator = socketChannel.alloc();
@@ -75,6 +80,11 @@ public class BackendConnection implements Connection {
     @Override
     public SessionConfig getSessionConfig() {
         return sessionConfig;
+    }
+
+    @Override
+    public GlobalConfig getGlobalConfig() {
+        return globalConfig;
     }
 
     @Override
