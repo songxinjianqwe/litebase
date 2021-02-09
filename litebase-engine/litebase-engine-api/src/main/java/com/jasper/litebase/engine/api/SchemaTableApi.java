@@ -1,0 +1,27 @@
+package com.jasper.litebase.engine.api;
+
+import com.jasper.litebase.engine.api.impl.DefaultSchemaTableApi;
+import com.jasper.litebase.engine.domain.SchemaDefinition;
+import com.jasper.litebase.engine.domain.TableDefinition;
+
+import java.util.List;
+
+public interface SchemaTableApi {
+    SchemaTableApi INSTANCE = new DefaultSchemaTableApi();
+
+    static SchemaTableApi getInstance() {
+        return INSTANCE;
+    }
+
+    void createTable(TableDefinition tableDefinition);
+
+    void dropTable(TableDefinition tableDefinition);
+
+    TableDefinition openTable(String schema, String table);
+
+    void createSchema(SchemaDefinition schemaDefinition);
+
+    SchemaDefinition openSchema(String schema);
+
+    void dropSchema(SchemaDefinition schemaDefinition);
+}

@@ -24,15 +24,10 @@ import org.slf4j.LoggerFactory;
 public class LiteBaseServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiteBaseServer.class);
 
-    private GlobalConfig globalConfig;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private AtomicLong conectionIdSeq = new AtomicLong(0);
     private ChannelFuture channelFuture;
-
-    public LiteBaseServer(GlobalConfig globalConfig) {
-        this.globalConfig = globalConfig;
-    }
 
     public void run() {
         try {
@@ -51,7 +46,7 @@ public class LiteBaseServer {
                     // 对Channel进行初始化，绑定实际的事件处理器，要么实现ChannelHandler接口，要么继承ChannelHandlerAdapter类
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel ch) {
-                            BackendConnection c = new BackendConnection(ch, globalConfig, new SessionConfig(),
+                            BackendConnection c = new BackendConnection(ch, new SessionConfig(),
                                     conectionIdSeq.incrementAndGet());
                             c.handshake();
                             ch.pipeline().addLast("SQLCommandHandler", new SQLCommandDispatcher(c));
@@ -82,7 +77,7 @@ public class LiteBaseServer {
             // 绑定端口，开始监听
             // 注意这里可以绑定多个端口，每个端口都针对某一种类型的数据（控制消息，数据消息）
             String host = InetAddress.getLocalHost().getHostAddress();
-            this.channelFuture = bootstrap.bind(host, globalConfig.getPort()).sync();
+            this.channelFuture = bootstrap.bind(host, GlobalConfig.getInstance().getPort()).sync();
             // 应用程序会一直等待，直到channel关闭
             LOGGER.info("LiteBase Started!");
         } catch (Throwable t) {

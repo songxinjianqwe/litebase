@@ -1,6 +1,7 @@
 package com.jasper.litebase.server.engine;
 
 import com.jasper.litebase.config.EngineType;
+import com.jasper.litebase.config.GlobalConfig;
 import com.jasper.litebase.engine.api.StoreEngine;
 
 import java.util.HashMap;

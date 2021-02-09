@@ -11,7 +11,8 @@ public class Starter {
 
     public static synchronized void go() {
         if (server == null) {
-            server = new LiteBaseServer(new GlobalConfig());
+            GlobalConfig.getInstance().setBaseDir("/Users/xinjian/Dev/litebase");
+            server = new LiteBaseServer();
             server.run();
         }
     }

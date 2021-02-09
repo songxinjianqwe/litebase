@@ -41,7 +41,6 @@ public class BackendConnection implements Connection {
     protected byte[] seed;
 
     // session config
-    protected GlobalConfig globalConfig;
     protected SessionConfig sessionConfig;
 
     // meta
@@ -50,10 +49,8 @@ public class BackendConnection implements Connection {
     protected int remotePort;
     protected int localPort;
 
-    public BackendConnection(SocketChannel socketChannel, GlobalConfig globalConfig, SessionConfig sessionConfig,
-            long id) {
+    public BackendConnection(SocketChannel socketChannel, SessionConfig sessionConfig, long id) {
         this.socketChannel = socketChannel;
-        this.globalConfig = globalConfig;
         this.sessionConfig = sessionConfig;
         this.connectionId = id;
         this.allocator = socketChannel.alloc();
@@ -80,11 +77,6 @@ public class BackendConnection implements Connection {
     @Override
     public SessionConfig getSessionConfig() {
         return sessionConfig;
-    }
-
-    @Override
-    public GlobalConfig getGlobalConfig() {
-        return globalConfig;
     }
 
     @Override

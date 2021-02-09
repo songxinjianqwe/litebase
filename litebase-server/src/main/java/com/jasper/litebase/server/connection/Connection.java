@@ -14,8 +14,6 @@ public interface Connection {
 
     SessionConfig getSessionConfig();
 
-    GlobalConfig getGlobalConfig();
-
     void writeBack(ByteBuf buffer);
 
     void heartbeat(byte[] data);

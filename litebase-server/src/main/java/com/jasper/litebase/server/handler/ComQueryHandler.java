@@ -1,16 +1,21 @@
 package com.jasper.litebase.server.handler;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
-import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.ast.statement.*;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlShowTableStatusStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlShowVariantsStatement;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlStatement;
 import com.jasper.litebase.config.util.LiteBaseStringUtil;
+import com.jasper.litebase.engine.api.SchemaTableApi;
 import com.jasper.litebase.engine.domain.Field;
 import com.jasper.litebase.engine.domain.ResultSet;
 import com.jasper.litebase.engine.domain.ResultSetMetaData;
 import com.jasper.litebase.server.connection.BackendConnection;
-import com.jasper.litebase.server.handler.impl.select.SelectHandler;
-import com.jasper.litebase.server.handler.impl.show.ShowVariablesHandler;
+import com.jasper.litebase.server.handler.impl.ddl.CreateDataBaseStmtHandler;
+import com.jasper.litebase.server.handler.impl.ddl.CreateTableStmtHandler;
+import com.jasper.litebase.server.handler.impl.ddl.DropTableStmtHandler;
+import com.jasper.litebase.server.handler.impl.select.SelectStmtHandler;
+import com.jasper.litebase.server.handler.impl.show.ShowTablesStmtHandler;
+import com.jasper.litebase.server.handler.impl.show.ShowVariablesStmtHandler;
 import com.jasper.litebase.server.protocol.server.EOFPacket;
 import com.jasper.litebase.server.protocol.server.FieldPacket;
 import com.jasper.litebase.server.protocol.server.ResultSetHeaderPacket;
@@ -28,9 +33,21 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
 
     private static Map<Class<? extends SQLStatement>, ComQueryHandler<?>> HANDLERS = new HashMap<>();
 
+    protected SchemaTableApi schemaTableApi;
+
+    public ComQueryHandler(SchemaTableApi schemaTableApi) {
+        this.schemaTableApi = schemaTableApi;
+    }
+
     static {
-        HANDLERS.put(SQLSelectStatement.class, new SelectHandler());
-        HANDLERS.put(MySqlShowVariantsStatement.class, new ShowVariablesHandler());
+        SchemaTableApi schemaTableApi = SchemaTableApi.getInstance();
+        HANDLERS.put(SQLSelectStatement.class, new SelectStmtHandler(schemaTableApi));
+        HANDLERS.put(MySqlShowVariantsStatement.class, new ShowVariablesStmtHandler(schemaTableApi));
+        HANDLERS.put(MySqlShowTableStatusStatement.class, new ShowTablesStmtHandler(schemaTableApi));
+        HANDLERS.put(SQLCreateTableStatement.class, new CreateTableStmtHandler(schemaTableApi));
+        HANDLERS.put(SQLDropTableStatement.class, new DropTableStmtHandler(schemaTableApi));
+        HANDLERS.put(SQLCreateDatabaseStatement.class, new CreateDataBaseStmtHandler(schemaTableApi));
+        HANDLERS.put(SQLDropDatabaseStatement.class, new DropTableStmtHandler(schemaTableApi));
     }
 
     public static void query(BackendConnection c, String sql, Long queryId) {
@@ -44,7 +61,7 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
         handler.handle(c, queryId, sql, statement);
     }
 
-    protected final void handle(BackendConnection c, Long queryId, String sql, T statement) {
+    protected void handle(BackendConnection c, Long queryId, String sql, T statement) {
         ByteBuf buffer = c.allocate();
         byte packetId = 0;
 
@@ -61,7 +78,7 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
 
         // fields
         for (Field field : fields) {
-            FieldPacket fieldPacket = PacketUtil.getField(field.getName(), field.getType());
+            FieldPacket fieldPacket = PacketUtil.getField(field.getName(), field.getType().getCode());
             fieldPacket.packetId = ++packetId;
             fieldPacket.writeToBuffer(buffer);
         }
@@ -97,5 +114,7 @@ public abstract class ComQueryHandler<T extends SQLStatement> {
         c.writeBack(buffer);
     }
 
-    protected abstract ResultSet doQuery(BackendConnection c, Long queryId, String sql, T statement);
+    protected ResultSet doQuery(BackendConnection c, Long queryId, String sql, T statement) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -1,10 +1,12 @@
 package com.jasper.litebase.engine.domain;
 
+import com.jasper.litebase.config.constant.FieldType;
+
 public class Field {
     private String name;
-    private int type;
+    private FieldType type;
 
-    public Field(String name, int type) {
+    public Field(String name, FieldType type) {
         this.name = name;
         this.type = type;
     }
@@ -13,7 +15,7 @@ public class Field {
         return name;
     }
 
-    public int getType() {
+    public FieldType getType() {
         return type;
     }
 }

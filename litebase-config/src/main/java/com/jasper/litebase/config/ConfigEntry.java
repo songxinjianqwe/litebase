@@ -1,10 +1,11 @@
 package com.jasper.litebase.config;
 
-public class ConfigEntry {
+public class ConfigEntry<T> {
     private final String name;
-    private String value;
+    private T value;
+    private boolean immutable = true;
 
-    public ConfigEntry(String name, String value) {
+    public ConfigEntry(String name, T value) {
         this.name = name;
         this.value = value;
     }
@@ -13,7 +14,14 @@ public class ConfigEntry {
         return name;
     }
 
-    public String getValue() {
+    public T getValue() {
         return value;
+    }
+
+    public void setValue(T value) {
+        if (immutable) {
+            throw new IllegalArgumentException("cannot modify a immutable global config entry");
+        }
+        this.value = value;
     }
 }
