@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlShowVariantsStatem
 import com.jasper.litebase.engine.api.SchemaTableApi;
 import com.jasper.litebase.engine.domain.ExecutionContext;
 import com.jasper.litebase.engine.domain.ResultSet;
+import com.jasper.litebase.engine.domain.Table;
 import com.jasper.litebase.engine.domain.TableDefinition;
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.engine.EngineManager;
@@ -21,8 +22,8 @@ public class ShowVariablesStmtHandler extends ComQueryHandler<MySqlShowVariantsS
     @Override
     protected ResultSet doQuery(BackendConnection c, Long queryId, String sql, MySqlShowVariantsStatement statement) {
         String schema = "performance_schema";
-        String table = "session_variables";
-        TableDefinition tableDefinition = schemaTableApi.openTable(schema, table);
+        String tableName = "session_variables";
+        Table table = schemaTableApi.openTable(schema, tableName);
         String where = null;
         if (statement.getWhere() != null) {
             where = statement.getWhere().toString();
@@ -44,8 +45,7 @@ public class ShowVariablesStmtHandler extends ComQueryHandler<MySqlShowVariantsS
             // return input.matches(expr);
             // };
         }
-        return EngineManager.getInstance(tableDefinition.getEngineType()).query(
-                new ExecutionContext(queryId, c.getSessionConfig()), tableDefinition, Collections.singletonList("*"),
-                where);
+        return EngineManager.getInstance(table.getTableDefinition().getEngineType()).query(
+                new ExecutionContext(queryId, c.getSessionConfig()), table, Collections.singletonList("*"), where);
     }
 }

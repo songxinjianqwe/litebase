@@ -1,8 +1,10 @@
 package com.jasper.litebase.engine.persist;
 
+import com.jasper.litebase.engine.api.DMLTemplate;
 import com.jasper.litebase.engine.api.StoreEngine;
 import com.jasper.litebase.engine.domain.ExecutionContext;
 import com.jasper.litebase.engine.domain.ResultSet;
+import com.jasper.litebase.engine.domain.Table;
 import com.jasper.litebase.engine.domain.TableDefinition;
 import com.jasper.litebase.engine.persist.handler.QueryHandler;
 import com.jasper.litebase.engine.persist.handler.impl.CommonQueryHandler;
@@ -22,30 +24,19 @@ public class PersistStoreEngine extends StoreEngine {
     }
 
     @Override
-    public ResultSet query(ExecutionContext context, TableDefinition tableDefinition, List<String> selectItems,
-            String whereClause) {
+    public int dml(ExecutionContext context, DMLTemplate t, Table table) {
+        return t.execute();
+    }
+
+    @Override
+    public ResultSet query(ExecutionContext context, Table table, List<String> selectItems, String whereClause) {
+        TableDefinition tableDefinition = table.getTableDefinition();
         String schema = tableDefinition.getSchema();
-        String table = tableDefinition.getTable();
-        if (!handlers.containsKey(schema) || !handlers.get(schema).containsKey(table)) {
-            return commonQueryHandler.query(context, schema, table, selectItems, whereClause);
+        String tableName = tableDefinition.getTable();
+        if (!handlers.containsKey(schema) || !handlers.get(schema).containsKey(tableName)) {
+            return commonQueryHandler.query(context, schema, tableName, selectItems, whereClause);
         }
-        return handlers.get(schema).get(table).query(context, schema, table, selectItems, whereClause);
-    }
-
-    @Override
-    public int insert(ExecutionContext context, TableDefinition tableDefinition, List<Object> values) {
-        return 0;
-    }
-
-    @Override
-    public int update(ExecutionContext context, TableDefinition tableDefinition, Map<String, Object> updateItems,
-            String whereClause) {
-        return 0;
-    }
-
-    @Override
-    public int delete(ExecutionContext context, TableDefinition tableDefinition, String whereClause) {
-        return 0;
+        return handlers.get(schema).get(tableName).query(context, schema, tableName, selectItems, whereClause);
     }
 
     private void registerQueryHandler(String schema, String table, QueryHandler handler) {

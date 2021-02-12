@@ -7,6 +7,7 @@ import com.jasper.litebase.config.constant.FieldType;
 import com.jasper.litebase.engine.api.SchemaTableApi;
 import com.jasper.litebase.engine.domain.ExecutionContext;
 import com.jasper.litebase.engine.domain.ResultSet;
+import com.jasper.litebase.engine.domain.Table;
 import com.jasper.litebase.engine.domain.TableDefinition;
 import com.jasper.litebase.server.connection.BackendConnection;
 import com.jasper.litebase.server.engine.EngineManager;
@@ -44,11 +45,11 @@ public class SelectStmtHandler extends ComQueryHandler<SQLSelectStatement> {
     protected ResultSet doQuery(BackendConnection c, Long queryId, String sql, SQLSelectStatement statement) {
         List<SQLSelectItem> selectList = statement.getSelect().getQueryBlock().getSelectList();
         SQLObject schema = statement.getSelect().getQueryBlock().getFrom().getParent();
-        String table = statement.getSelect().getQueryBlock().getFrom().getAlias();
+        String tableName = statement.getSelect().getQueryBlock().getFrom().getAlias();
         String schemaName = schema.toString();
-        TableDefinition tableDefinition = schemaTableApi.openTable(schemaName, table);
-        return EngineManager.getInstance(tableDefinition.getEngineType()).query(
-                new ExecutionContext(queryId, c.getSessionConfig()), tableDefinition,
+        Table table = schemaTableApi.openTable(schemaName, tableName);
+        return EngineManager.getInstance(table.getTableDefinition().getEngineType()).query(
+                new ExecutionContext(queryId, c.getSessionConfig()), table,
                 selectList.stream().map(SQLSelectItem::getAlias).collect(Collectors.toList()),
                 statement.getSelect().getQueryBlock().getWhere().toString());
     }

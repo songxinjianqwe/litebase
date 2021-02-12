@@ -4,36 +4,62 @@ import com.alibaba.fastjson.JSON;
 import com.jasper.litebase.config.GlobalConfig;
 import com.jasper.litebase.engine.api.SchemaTableApi;
 import com.jasper.litebase.engine.domain.SchemaDefinition;
+import com.jasper.litebase.engine.domain.Table;
 import com.jasper.litebase.engine.domain.TableDefinition;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSchemaTableApi implements SchemaTableApi {
+    private Map<String, Table> tableDefCache = new ConcurrentHashMap<>();
     private static final String SCHEMA_DEF_FILENAME = "db.opt";
     private static final String DATA_BASE_DIR = "data";
     private static final String TABLE_DEFINITION_SUFFIX = ".frm";
     private static final String TABLE_DATA_SUFFIX = ".ibd";
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchemaTableApi.class);
 
+    private String getCacheKey(TableDefinition tableDefinition) {
+        return getCacheKey(tableDefinition.getSchema(), tableDefinition.getTable());
+    }
+
+    private String getCacheKey(String schema, String table) {
+        return schema + "#" + table;
+    }
+
     @Override
     public void createTable(TableDefinition tableDefinition) {
         try {
             GlobalConfig globalConfig = GlobalConfig.getInstance();
-            File file = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, tableDefinition.getSchema(),
+            File defFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, tableDefinition.getSchema(),
                     tableDefinition.getTable() + TABLE_DEFINITION_SUFFIX).toFile();
-            if (file.exists() || file.isDirectory()) {
-                throw new IllegalStateException("table already exists: " + JSON.toJSONString(tableDefinition));
+            if (defFile.exists() || defFile.isDirectory()) {
+                throw new IllegalStateException(
+                        "table already exists for def file exists: " + JSON.toJSONString(tableDefinition));
             }
-            if (!file.createNewFile()) {
+            if (!defFile.createNewFile()) {
                 throw new IllegalStateException("create def file failed: " + JSON.toJSONString(tableDefinition));
             }
             String def = JSON.toJSONString(tableDefinition);
-            IOUtils.write(def, new FileOutputStream(file), globalConfig.getCharset());
+            IOUtils.write(def, new FileOutputStream(defFile), globalConfig.getCharset());
+            File dataFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, tableDefinition.getSchema(),
+                    tableDefinition.getTable() + TABLE_DATA_SUFFIX).toFile();
+            if (dataFile.exists() || dataFile.isDirectory()) {
+                throw new IllegalStateException(
+                        "table already exists for data file exists: " + JSON.toJSONString(tableDefinition));
+            }
+            if (!dataFile.createNewFile()) {
+                throw new IllegalStateException("create data file failed: " + JSON.toJSONString(tableDefinition));
+            }
+            Table table = new Table(tableDefinition, new FileInputStream(dataFile).getChannel());
+            tableDefCache.put(getCacheKey(tableDefinition), table);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -63,23 +89,47 @@ public class DefaultSchemaTableApi implements SchemaTableApi {
             LOGGER.warn("table data file {} not found, do not need to drop", JSON.toJSONString(tableDefinition));
         }
         LOGGER.info("drop table succeeded: {}", JSON.toJSONString(tableDefinition));
+        tableDefCache.remove(getCacheKey(tableDefinition));
     }
 
     @Override
-    public TableDefinition openTable(String schema, String table) {
+    public Table openTable(String schema, String table) {
+        String cacheKey = getCacheKey(schema, table);
         try {
-            GlobalConfig globalConfig = GlobalConfig.getInstance();
-            Path path = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DEFINITION_SUFFIX);
-            File file = path.toFile();
-            if (!file.exists() || file.isDirectory()) {
-                throw new IllegalStateException("table not found or directory: " + schema + "#" + table);
+            if (tableDefCache.containsKey(cacheKey)) {
+                return tableDefCache.get(cacheKey);
             }
-            String def = IOUtils.toString(new FileReader(file));
+            // 这块代码对同一个table而言是有可能重入的，以第一个结束的为准，后面结束的将自己对应的channel再关掉
+            GlobalConfig globalConfig = GlobalConfig.getInstance();
+            File defFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DEFINITION_SUFFIX)
+                    .toFile();
+            if (!defFile.exists() || defFile.isDirectory()) {
+                throw new IllegalStateException("table def file not found or directory: " + schema + "#" + table);
+            }
+            File dataFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DATA_SUFFIX)
+                    .toFile();
+            if (!dataFile.exists() || dataFile.isDirectory()) {
+                throw new IllegalStateException("table data file not found or directory: " + schema + "#" + table);
+            }
+            String def = IOUtils.toString(new FileReader(defFile));
             TableDefinition tableDefinition = JSON.parseObject(def, TableDefinition.class);
             LOGGER.info("open table succeeded: {}", JSON.toJSONString(tableDefinition));
-            return tableDefinition;
+            Table result = new Table(tableDefinition, new FileInputStream(dataFile).getChannel());
+            // 自己放成功的话返回的是null。否则返回的是map中的值
+            if (tableDefCache.putIfAbsent(cacheKey, result) != null) {
+                result.close();
+            }
+            return result;
         } catch (Throwable t) {
             throw new RuntimeException(t);
+        }
+    }
+
+    @Override
+    public void closeTable(Table table) {
+        Table t = tableDefCache.remove(getCacheKey(table.getTableDefinition()));
+        if (t != null) {
+            t.close();
         }
     }
 
