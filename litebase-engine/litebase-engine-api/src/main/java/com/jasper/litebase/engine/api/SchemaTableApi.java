@@ -5,8 +5,6 @@ import com.jasper.litebase.engine.domain.SchemaDefinition;
 import com.jasper.litebase.engine.domain.Table;
 import com.jasper.litebase.engine.domain.TableDefinition;
 
-import java.util.List;
-
 public interface SchemaTableApi {
     SchemaTableApi INSTANCE = new DefaultSchemaTableApi();
 
@@ -20,7 +18,7 @@ public interface SchemaTableApi {
 
     Table openTable(String schema, String table);
 
-    void closeTable(Table table);
+    void closeTable(Table tableImpl);
 
     void createSchema(SchemaDefinition schemaDefinition);
 

@@ -1,4 +1,4 @@
-package com.jasper.litebase.server.engine;
+package com.jasper.litebase.engine.api.impl;
 
 import com.jasper.litebase.config.EngineType;
 import com.jasper.litebase.config.GlobalConfig;
@@ -10,7 +10,7 @@ import java.util.Map;
 public class EngineManager {
     private static Map<EngineType, StoreEngine> ENGINES = new HashMap<>();
 
-    public static synchronized StoreEngine getInstance(EngineType engineType) {
+    static synchronized StoreEngine getInstance(EngineType engineType) {
         if (!ENGINES.containsKey(engineType)) {
             try {
                 Class<?> aClass = Class.forName(engineType.getClassName());

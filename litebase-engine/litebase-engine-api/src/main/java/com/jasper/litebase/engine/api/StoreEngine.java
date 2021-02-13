@@ -3,10 +3,8 @@ package com.jasper.litebase.engine.api;
 import com.jasper.litebase.engine.domain.ExecutionContext;
 import com.jasper.litebase.engine.domain.ResultSet;
 import com.jasper.litebase.engine.domain.Table;
-import com.jasper.litebase.engine.domain.TableDefinition;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class StoreEngine {
 

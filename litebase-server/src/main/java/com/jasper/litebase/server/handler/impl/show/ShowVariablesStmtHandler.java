@@ -5,12 +5,10 @@ import com.jasper.litebase.engine.api.SchemaTableApi;
 import com.jasper.litebase.engine.domain.ExecutionContext;
 import com.jasper.litebase.engine.domain.ResultSet;
 import com.jasper.litebase.engine.domain.Table;
-import com.jasper.litebase.engine.domain.TableDefinition;
 import com.jasper.litebase.server.connection.BackendConnection;
-import com.jasper.litebase.server.engine.EngineManager;
+import com.jasper.litebase.engine.api.impl.EngineManager;
 import com.jasper.litebase.server.handler.ComQueryHandler;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 public class ShowVariablesStmtHandler extends ComQueryHandler<MySqlShowVariantsStatement> {
@@ -45,7 +43,6 @@ public class ShowVariablesStmtHandler extends ComQueryHandler<MySqlShowVariantsS
             // return input.matches(expr);
             // };
         }
-        return EngineManager.getInstance(table.getTableDefinition().getEngineType()).query(
-                new ExecutionContext(queryId, c.getSessionConfig()), table, Collections.singletonList("*"), where);
+        return table.query(new ExecutionContext(queryId, c.getSessionConfig()), Collections.singletonList("*"), where);
     }
 }

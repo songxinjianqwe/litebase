@@ -1,40 +1,17 @@
 package com.jasper.litebase.engine.domain;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.channels.FileChannel;
+import com.jasper.litebase.engine.api.DMLTemplate;
 
-public class Table {
-    private TableDefinition tableDefinition;
-    private File defFile;
-    private File dataFile;
-    private FileChannel channel;
+import java.util.List;
 
-    public Table(TableDefinition tableDefinition) {
-        this.tableDefinition = tableDefinition;
-    }
+public interface Table {
+    void init();
 
-    public void init() {
-        try {
-            channel = new FileInputStream(dataFile).getChannel();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-    }
+    TableDefinition getTableDefinition();
 
-    public TableDefinition getTableDefinition() {
-        return tableDefinition;
-    }
+    void close();
 
-    public FileChannel getChannel() {
-        return channel;
-    }
+    ResultSet query(ExecutionContext context, List<String> selectItem, String whereClause);
 
-    public void close() {
-        try {
-            channel.close();
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-    }
+    int dml(ExecutionContext context, DMLTemplate t);
 }

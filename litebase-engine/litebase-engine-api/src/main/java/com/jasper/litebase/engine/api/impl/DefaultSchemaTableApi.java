@@ -11,10 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,7 +55,7 @@ public class DefaultSchemaTableApi implements SchemaTableApi {
             if (!dataFile.createNewFile()) {
                 throw new IllegalStateException("create data file failed: " + JSON.toJSONString(tableDefinition));
             }
-            Table table = new Table(tableDefinition);
+            Table table = new TableImpl(tableDefinition);
             table.init();
             tableDefCache.put(getCacheKey(tableDefinition), table);
         } catch (Throwable t) {
@@ -114,7 +111,7 @@ public class DefaultSchemaTableApi implements SchemaTableApi {
                 String def = IOUtils.toString(new FileReader(defFile));
                 TableDefinition tableDefinition = JSON.parseObject(def, TableDefinition.class);
                 LOGGER.info("open table succeeded: {}", JSON.toJSONString(tableDefinition));
-                Table result = new Table(tableDefinition);
+                Table result = new TableImpl(tableDefinition);
                 // 自己放成功的话返回的是null。否则返回的是map中的值
                 if (tableDefCache.putIfAbsent(cacheKey, result) == null) {
                     result.init();
