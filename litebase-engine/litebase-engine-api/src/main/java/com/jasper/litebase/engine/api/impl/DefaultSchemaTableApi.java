@@ -58,7 +58,8 @@ public class DefaultSchemaTableApi implements SchemaTableApi {
             if (!dataFile.createNewFile()) {
                 throw new IllegalStateException("create data file failed: " + JSON.toJSONString(tableDefinition));
             }
-            Table table = new Table(tableDefinition, new FileInputStream(dataFile).getChannel());
+            Table table = new Table(tableDefinition);
+            table.init();
             tableDefCache.put(getCacheKey(tableDefinition), table);
         } catch (Throwable t) {
             throw new RuntimeException(t);
@@ -96,30 +97,30 @@ public class DefaultSchemaTableApi implements SchemaTableApi {
     public Table openTable(String schema, String table) {
         String cacheKey = getCacheKey(schema, table);
         try {
-            if (tableDefCache.containsKey(cacheKey)) {
-                return tableDefCache.get(cacheKey);
+            if (!tableDefCache.containsKey(cacheKey)) {
+                // 这块代码对同一个table而言是有可能重入的，以第一个结束的为准，后面结束的将自己对应的channel再关掉
+                GlobalConfig globalConfig = GlobalConfig.getInstance();
+                File defFile = Paths
+                        .get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DEFINITION_SUFFIX)
+                        .toFile();
+                if (!defFile.exists() || defFile.isDirectory()) {
+                    throw new IllegalStateException("table def file not found or directory: " + schema + "#" + table);
+                }
+                File dataFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DATA_SUFFIX)
+                        .toFile();
+                if (!dataFile.exists() || dataFile.isDirectory()) {
+                    throw new IllegalStateException("table data file not found or directory: " + schema + "#" + table);
+                }
+                String def = IOUtils.toString(new FileReader(defFile));
+                TableDefinition tableDefinition = JSON.parseObject(def, TableDefinition.class);
+                LOGGER.info("open table succeeded: {}", JSON.toJSONString(tableDefinition));
+                Table result = new Table(tableDefinition);
+                // 自己放成功的话返回的是null。否则返回的是map中的值
+                if (tableDefCache.putIfAbsent(cacheKey, result) == null) {
+                    result.init();
+                }
             }
-            // 这块代码对同一个table而言是有可能重入的，以第一个结束的为准，后面结束的将自己对应的channel再关掉
-            GlobalConfig globalConfig = GlobalConfig.getInstance();
-            File defFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DEFINITION_SUFFIX)
-                    .toFile();
-            if (!defFile.exists() || defFile.isDirectory()) {
-                throw new IllegalStateException("table def file not found or directory: " + schema + "#" + table);
-            }
-            File dataFile = Paths.get(globalConfig.getBaseDir(), DATA_BASE_DIR, schema, table + TABLE_DATA_SUFFIX)
-                    .toFile();
-            if (!dataFile.exists() || dataFile.isDirectory()) {
-                throw new IllegalStateException("table data file not found or directory: " + schema + "#" + table);
-            }
-            String def = IOUtils.toString(new FileReader(defFile));
-            TableDefinition tableDefinition = JSON.parseObject(def, TableDefinition.class);
-            LOGGER.info("open table succeeded: {}", JSON.toJSONString(tableDefinition));
-            Table result = new Table(tableDefinition, new FileInputStream(dataFile).getChannel());
-            // 自己放成功的话返回的是null。否则返回的是map中的值
-            if (tableDefCache.putIfAbsent(cacheKey, result) != null) {
-                result.close();
-            }
-            return result;
+            return tableDefCache.get(cacheKey);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

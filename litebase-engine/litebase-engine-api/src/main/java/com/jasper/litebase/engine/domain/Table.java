@@ -1,14 +1,25 @@
 package com.jasper.litebase.engine.domain;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
 
 public class Table {
     private TableDefinition tableDefinition;
+    private File defFile;
+    private File dataFile;
     private FileChannel channel;
 
-    public Table(TableDefinition tableDefinition, FileChannel channel) {
+    public Table(TableDefinition tableDefinition) {
         this.tableDefinition = tableDefinition;
-        this.channel = channel;
+    }
+
+    public void init() {
+        try {
+            channel = new FileInputStream(dataFile).getChannel();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     public TableDefinition getTableDefinition() {
